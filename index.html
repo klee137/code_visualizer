@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<!-- These are like the include files in C/Java.  They import stuff -->
+	<link href="css/style.css" rel="stylesheet">
+	<script src="http://code.jquery.com/jquery-latest.js"></script>
+	<script type="text/javascript" src="http://api.filepicker.io/v1/filepicker.js"></script>
+	<script src="http://www.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+	<link href="http://www.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet">
+	<script src="js/spot.js"></script>
+</head>
+
+<body style="margin:0">
+<!-- These are elements on the page like buttons and containers -->
+<nav class='left'>
+	<button class='btn btn-default' id='zoomin'>+</button><br>
+	<button class='btn btn-default' id='zoomout'>-</button><br><br>
+
+	<!--<input type="file" id="files" name="files[]" multiple />-->
+	<button class='btn btn-primary' id='uploadBtn' onClick='uploadFile()'>Upload</button><br><br>
+	<button class='btn btn-primary' id='pasteBtn'>Paste</button><br><br>
+	<button class='btn btn-primary' id='runBtn'>Run!</button>	
+</nav>
+<section class='shelf'></section>
+<textarea class='code'>
+boolean a;
+int x=2;
+char c='d';
+int y=3;
+x =3 ;
+z=4;
+</textarea>
+
+<!-- ACTUAL CODE STUFF -->
+<script src="js/user-interface.js"></script>
+<script>
+	var lines =$('textarea').val().trim().split('\n');
+
+	var arrStr; //array of segments
+	var storage = []; //arrays of segmented lines
+	var vstorage=[]; //variable storage
+	var search ={}; //key hashmap
+	var search1=[]; //key storage
+
+	var ptr; //helping variable1
+	var ptr2; //helping variable2
+	var helper; //helping variable3
+	var index;
+	var n;
+
+
+	for(var i=0;i<8;i++){
+		vstorage.push([]);
+	}
+	// 0-int 1-byte 2-short 3-long 4-float 5-double 6-boolean 7-char 
+
+
+	for(index=0;index<lines.length;index++){
+		arrStr=null;
+
+		var temp=lines[index].trim().split(' ');
+		console.log(temp);
+		if(temp.length>0){
+			arrStr=[];
+			
+			for(var i=0;i<temp.length;i++){
+				if((n=temp[i].indexOf("="))!=-1){ //case when there is equal sign
+					if(n!=0){
+						arrStr.push(temp[i].substring(0,n));
+					}
+					arrStr.push(temp[i].substring(n,n+1));
+					if(n+1 !=temp[i].length){
+						arrStr.push(temp[i].substring(n+1,temp[i].length));
+					}
+				} else{
+					arrStr.push(temp[i]);
+				}
+			}
+		} //done putting all the segments into arrStr
+
+		if(arrStr !=null){
+			if((n=arrStr[arrStr.length-1].indexOf(";"))!=-1){
+				if(n==0){
+					arrStr.pop();
+				} else{
+					arrStr[arrStr.length-1]=arrStr[arrStr.length-1].replace(";","");
+				}
+				//add all the variables into the storage
+				if(arrStr[0].indexOf("int")!=-1){
+					vstorage[0].push(arrStr[1]);
+					search1.push(arrStr[1]);
+					if(arrStr.length>3){
+						search[arrStr[1]]=arrStr[3];
+					}
+				} else if(arrStr[0].indexOf("byte")!=-1){
+					vstorage[1].push(arrStr[1]);
+					search1.push(arrStr[1]);
+					if(arrStr.length>3){
+						search[arrStr[1]]=arrStr[3];
+					}
+				} else if(arrStr[0].indexOf("long")!=-1){
+					vstorage[2].push(arrStr[1]);
+					search1.push(arrStr[1]);
+					if(arrStr.length>3){
+						search[arrStr[1]]=arrStr[3];
+					}
+				} else if(arrStr[0].indexOf("float")!=-1){
+					vstorage[3].push(arrStr[1]);
+					search1.push(arrStr[1]);
+					if(arrStr.length>3){
+						search[arrStr[1]]=arrStr[3];
+					}
+				} else if(arrStr[0].indexOf("double")!=-1){
+					vstorage[4].push(arrStr[1]);
+					search1.push(arrStr[1]);
+					if(arrStr.length>3){
+						search[arrStr[1]]=arrStr[3];
+					}
+				} else if(arrStr[0].indexOf("boolean")!=-1){
+					vstorage[5].push(arrStr[1]);
+					search1.push(arrStr[1]);
+					if(arrStr.length>3){
+						search[arrStr[1]]=arrStr[3];
+					}
+				} else if(arrStr[0].indexOf("char")!=-1){
+					vstorage[6].push(arrStr[1]);
+					search1.push(arrStr[1]);
+					if(arrStr.length>3){
+						search[arrStr[1]]=arrStr[3];
+					}
+				} else{
+
+					for(var i=0;i<search1.length;i++){
+						if((search1[i]===arrStr[0])){
+							break;
+						}
+						if(i==search1.length-1){
+							console.log("ERROR***************variable is not declared yet");
+							throw new Error("illegal operation for variable");
+						}
+					}
+				}
+				storage.push(arrStr);
+			}
+		}
+
+	}
+
+
+	for(var i=0;i<storage.length;i++){
+			console.log(storage[i]);		
+	}
+	for(var i=0;i<7;i++){
+		console.log(vstorage[i]);
+	}
+</script>
+</body>
+</html>

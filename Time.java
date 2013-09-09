@@ -21,6 +21,13 @@ public class parsing{
 		ArrayList<String> arrStr;
 		ArrayList<String>[] vstorage; //store variables according to types
 		HashSet<String> search; //store all the variables
+
+		storage = [];
+		arrStr = []
+		vstorage = []
+		search = {}
+
+		storage.push([ ... ])
 		
 
 
