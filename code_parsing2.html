@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<script src="http://code.jquery.com/jquery-latest.js"></script>
+
+<textarea>
+
+boolean a;
+int x=2;
+char c='d';
+int y=3;
+x=6;
+y=z+x/352;
+y=8;
+if(x>3){
+	x=2;
+}
+
+for(int i=0;i<10;i++){
+	x=4;
+	y=3;
+}
+if(x==1){
+	
+}
+
+boolean z =(x<3);
+
+int z =2;
+
+</textarea>
+
+
+
+
+</body>
+
+<script>
+
+/*
+var a = {1,2,3,4};
+a.filter(function(x){
+	return x %2 ==0;
+})
+
+
+*/
+
+
+
+var lines =$('textarea').val().trim().split('\n');
+var storage=[];
+
+// program starts here
+
+for(var i=0;i<lines.length;i++){
+	var temp = lines[i].trim();
+	if(temp.length<1){
+		continue;
+	} 
+
+	temp = temp.split(' ');
+	//go through inequality signs < = == >
+	temp = inequalityStatement(temp);
+	// go through brackets 
+	temp = brackets(temp);
+	// go through math expression
+	for(var x=0;x<5;x++){
+		temp = mathExpression(temp);
+	}
+	// go through middle brackets 
+	for(var x=0;x<2;x++){
+		temp = semicolonM(temp);
+	}
+	// go through semicolon
+	temp = semicolon(temp);
+
+	// store to variable storage
+	//storeVariables(temp);
+
+	//finally add it to the storage
+	storage.push(temp);
+}
+for(var i=0;i<storage.length;i++){
+	console.log(storage[i]);		
+}
+
+console.log(vstorage.varValue);
+
+
+
+
+
+//main helper
+function ifStatement(){
+
+}
+function forStatement(){
+	
+}
+function whileStatement(){
+	
+}
+
+
+//sub helper
+function brackets(lineArray){
+	var retArray=[];
+
+	for(var i=0;i<lineArray.length;i++){
+		if((n=lineArray[i].indexOf("("))!=-1){
+			if(n!=0){
+				retArray.push(lineArray[i].substring(0,n));
+			}
+			retArray.push(lineArray[i].substring(n,n+1));
+			if(n+1!=lineArray[i].length){
+				var str= lineArray[i].substring(n+1,lineArray[i].length);
+				if((n=str.indexOf(")"))!=-1){
+					if(n!=0){
+						retArray.push(str.substring(0,n));
+					}
+					retArray.push(str.substring(n,n+1));
+					if(n+1!=str.length){
+						retArray.push(str.substring(n+1,str.length));
+					}
+				} else{
+					retArray.push(str);
+				}
+			}
+		}
+		else if((n=lineArray[i].indexOf(")"))!=-1){
+			if(n!=0){
+				retArray.push(lineArray[i].substring(0,n));
+			}
+			retArray.push(lineArray[i].substring(n,n+1));
+			if(n+1!=lineArray.length){
+				retArray.push(lineArray[i].substring(n+1,lineArray[i].length));
+			}
+		} else{
+			retArray.push(lineArray[i]);
+		}
+	}
+	return retArray;
+}
+function storeVariables(lineArray){
+	if(lineArray[0]==="int"){
+		vstorage.int.push(lineArray[1]);
+		if(lineArray.length>=4){
+			vstorage.varValue[lineArray[1]]=lineArray[3];
+		}
+	}
+	else if(lineArray[0]==="byte"){
+		vstorage.byte.push(lineArray[1]);
+		if(lineArray.length>=4){
+			vstorage.varValue[lineArray[1]]=lineArray[3];	
+		}	
+	}
+	else if(lineArray[0]==="short"){
+		vstorage.short.push(lineArray[1]);
+		if(lineArray.length>=4){
+			vstorage.varValue[lineArray[1]]=lineArray[3];
+		}
+	}
+	else if(lineArray[0]==="long"){
+		vstorage.long.push(lineArray[1]);
+		if(lineArray.length>=4){
+			vstorage.varValue[lineArray[1]]=lineArray[3];
+		}
+	}
+	else if(lineArray[0]==="float"){
+		vstorage.float.push(lineArray[1]);
+		if(lineArray.length>=4){
+			vstorage.varValue[lineArray[1]]=lineArray[3];
+		}
+	}
+	else if(lineArray[0]==="double"){
+		vstorage.double.push(lineArray[1]);
+		if(lineArray.length>=4){
+			vstorage.varValue[lineArray[1]]=lineArray[3];
+		}
+	}
+	else if(lineArray[0]==="char"){
+		vstorage.char.push(lineArray[1]);
+		if(lineArray.length>=4){
+			vstorage.varValue[lineArray[1]]=lineArray[3];
+		}
+	}
+	else if(lineArray[0]==="boolean"){
+		vstorage.boolean.push(lineArray[1]);
+		if(lineArray.length>=4){
+			vstorage.varValue[lineArray[1]]=lineArray[3];
+		}
+	}
+	else if(lineArray[0]==="for"){
+
+	}
+	else if(lineArray[0]==="while"){
+
+	}
+	else if(lineArray[0]==="if"){
+
+	}
+	else if(lineArray[0] in vstorage.varValue){
+		if(lineArray.length>=3){
+			vstorage.varValue[lineArray[0]]=lineArray[2];
+		}
+	} else{
+		throw "no such word implemented"+lineArray[0];
+	}
+
+
+
+
+
+}
+
+
+
+function mathExpression(lineArray){
+	//case for + / ++
+
+	var retArray=[];
+	for(var i=0;i<lineArray.length;i++){
+		if((n=lineArray[i].indexOf("+"))!=-1){
+			if(n!=0){
+				retArray.push(lineArray[i].substring(0,n));
+			}
+			retArray.push(lineArray[i].substring(n,n+1));
+			if(n+1 !=lineArray[i].length){
+				if(lineArray[i].substring(n+1,n+2)==="+"){
+					retArray.pop();
+					retArray.push("++");
+					if(n+2!=lineArray[i].length){
+						retArray.push(lineArray[i].substring(n+2,lineArray[i].length));
+					}
+				} else{
+					retArray.push(lineArray[i].substring(n+1,lineArray[i].length));
+				}
+			}
+		} else{
+			retArray.push(lineArray[i]);
+		}
+	}
+
+	//case for - / --
+
+	var retArray1=[];
+	for(var i=0;i<retArray.length;i++){
+		if((n=retArray[i].indexOf("-"))!=-1){
+			if(n!=0){
+				retArray1.push(retArray[i].substring(0,n));
+			}
+			retArray1.push(retArray[i].substring(n,n+1));
+			if(n+1 !=retArray[i].length){
+				if(retArray[i].substring(n+1,n+2)==="-"){
+					retArray1.pop();
+					retArray1.push("--");
+					if(n+2!=retArray[i].length){
+						retArray1.push(retArray[i].substring(n+2,retArray[i].length));
+					}
+				} else{
+					retArray1.push(retArray[i].substring(n+1,retArray[i].length));
+				}
+			}
+		} else{
+			retArray1.push(retArray[i]);
+		}
+	}
+
+	//case for *
+
+	var retArray2=[];
+	for(var i=0;i<retArray1.length;i++){
+		if((n=retArray1[i].indexOf("*"))!=-1){
+			if(n!=0){
+				retArray2.push(retArray1[i].substring(0,n));
+			}
+			retArray2.push(retArray1[i].substring(n,n+1));
+			if((n+1) != retArray1[i].length){
+				retArray2.push(retArray1[i].substring(n+1,retArray1[i].length));
+			}
+
+		} else{
+			retArray2.push(retArray1[i]);
+		}
+	}
+
+	//case for /
+
+	var retArray3=[];
+	for(var i=0;i<retArray2.length;i++){
+		if((n=retArray2[i].indexOf("/"))!=-1){
+			if(n!=0){
+				retArray3.push(retArray2[i].substring(0,n));
+			}
+			retArray3.push(retArray2[i].substring(n,n+1));
+			if((n+1) != retArray2[i].length){
+				retArray3.push(retArray2[i].substring(n+1,retArray2[i].length));
+			}
+		} else{
+			retArray3.push(retArray2[i]);
+		}
+	}
+
+	// case for %
+
+	var retArray4=[];
+	for(var i=0;i<retArray3.length;i++){
+		if((n=retArray3[i].indexOf("%"))!=-1){
+			if(n!=0){
+				retArray4.push(retArray3[i].substring(0,n));
+			}
+			retArray4.push(retArray3[i].substring(n,n+1));
+			if((n+1) != retArray3[i].length){
+				retArray4.push(retArray3[i].substring(n+1,retArray3[i].length));
+			}
+		} else{
+			retArray4.push(retArray3[i]);
+		}
+	}
+
+	return retArray4;
+
+
+}
+
+function semicolonM(lineArray){
+	var retArray=[];
+	//for(int i=0;i<x;i++)
+	for(var i=0;i<lineArray.length;i++){
+		if(i==lineArray.length-1){
+			retArray.push(lineArray[i]);
+		}
+		else if((n=lineArray[i].indexOf(";"))!=-1){
+			if(n!=0){
+				retArray.push(lineArray[i].substring(0,n));
+			}
+			retArray.push(lineArray[i].substring(n,n+1));
+			if(n+1!=lineArray[i].length){
+				retArray.push(lineArray[i].substring(n+1,lineArray[i].length));
+			}
+		} else{
+			retArray.push(lineArray[i]);
+		}
+	}
+	return retArray;
+}
+
+
+
+function semicolon(lineArray){
+	if((n=lineArray[lineArray.length-1].indexOf(";"))!=-1){
+		if(n==0){
+			lineArray.pop();
+		} else{
+			lineArray[lineArray.length-1]=lineArray[lineArray.length-1].replace(";","");
+		}
+	}
+	return lineArray;
+	
+}
+function inequalityStatement(lineArray){
+	// = and == sign case
+	var retArray=[];
+
+	for(var i=0;i<lineArray.length;i++){
+		if((n=lineArray[i].indexOf("="))!=-1){
+			if(n!=0){
+				retArray.push(lineArray[i].substring(0,n));
+			}
+			retArray.push(lineArray[i].substring(n,n+1));
+			if(n+1 !=lineArray[i].length){
+				if(lineArray[i].substring(n+1,n+2)==="="){
+					retArray.pop();
+					retArray.push("==");
+					if(n+2!=lineArray.length){
+						retArray.push(lineArray[i].substring(n+2,lineArray[i].length));
+					}
+				} else{
+					retArray.push(lineArray[i].substring(n+1,lineArray[i].length));
+				}
+			}
+		} else{
+			retArray.push(lineArray[i]);
+		}
+	}
+	var retArray1=[];
+
+	// < sign case
+	for(var i=0;i<retArray.length;i++){
+		if((n=retArray[i].indexOf("<"))!=-1){
+			if(n!=0){
+				retArray1.push(retArray[i].substring(0,n));
+			}
+			retArray1.push(retArray[i].substring(n,n+1));
+			if((n+1) != retArray[i].length){
+				retArray1.push(retArray[i].substring(n+1,retArray[i].length));
+			}
+
+		} else{
+			retArray1.push(retArray[i]);
+		}
+	}
+	// > sign case 
+
+	var retArray2=[];
+
+	for(var i=0;i<retArray1.length;i++){
+		if((n=retArray1[i].indexOf(">"))!=-1){
+			if(n!=0){
+				retArray2.push(retArray1[i].substring(0,n));
+			}
+			retArray2.push(retArray1[i].substring(n,n+1));
+			if((n+1) != retArray1[i].length){
+				retArray2.push(retArray1[i].substring(n+1,retArray1[i].length));
+			}
+
+		} else{
+			retArray2.push(retArray1[i]);
+		}
+	}
+
+	return retArray2;
+}
+
+var vstorage = {
+	'varValue' : {}, 
+	'int' : [],
+	'byte' : [],
+	'short' : [],
+	'long' : [],
+	'float' : [],
+	'double' : [],
+	'boolean' : [],
+	'char' : []
+}
+
+// 0-int 1-byte 2-short 3-long 4-float 5-double 6-boolean 7-char 
+
+
+
+
+
+
+
+
+
+
+
+</script>
+</html>
