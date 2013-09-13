@@ -6,29 +6,178 @@
 
 <textarea>
 
-boolean a;
-int x=2;
-char c='d';
-int y=3;
-x=6;
-y=z+x/352;
-y=8;
-if(x>3){
-	x=2;
+import java.util.ArrayList;
+import java.util.Iterator;
+
+public class Tree {
+	private TreeNode myRoot;
+	private static int count;
+
+	public Tree(TreeNode root){
+		myRoot=root;
+	}
+
+
+
+	public void print_pre(){
+		print_prehelper(myRoot);
+	}
+
+
+	private static void print_prehelper(TreeNode t){
+		System.out.print(t.myItem);
+		if(t.myLeft!=null){
+			print_prehelper(t.myLeft);
+		}
+		if(t.myRight!=null){
+			print_prehelper(t.myRight);
+		}
+
+	}
+	private static void sizehelper(TreeNode t){
+		if(t.myLeft!=null){
+			count++;
+			sizehelper(t.myLeft);
+		}
+		if(t.myRight !=null){
+			count++;
+			sizehelper(t.myRight);
+		}
+
+	}
+
+	public void threadLevels(){
+		ArrayList<TreeNode> arrt;
+		int i;
+		int size;
+		boolean exists;
+		TreeNode prev;
+		Object help;
+
+		if(myRoot ==null){
+			return;
+		}
+		count=1;
+		sizehelper(myRoot);
+		arrt=new ArrayList<TreeNode>();
+		size=(int)Math.pow(2,count+2);
+		arrt.add(new TreeNode()); //index0 will not be used
+		arrt.add(myRoot);
+		for(int k=2;k<size;k++){
+			arrt.add(new TreeNode());
+		}
+
+
+		threadhelper(arrt,1);
+		//after setting everything
+		i=2;
+		prev=null;
+		exists=true;
+		
+
+
+		while(exists){
+			exists=false;
+			for(int index=i;index<i*i;index++){
+				if(arrt.get(index).myItem!=null){
+					if(prev!=null){
+					prev.levelList=arrt.get(index);
+					}
+					exists=true;
+					prev=arrt.get(index);
+					
+				}
+
+			}
+			prev=null;
+			i=i*i;
+		}
+
+
+	}
+	private static void threadhelper(ArrayList<TreeNode> arrt,int index){
+		if(arrt.get(index).myLeft!=null){
+			arrt.set(index*2, arrt.get(index).myLeft);
+			threadhelper(arrt,index*2);
+		}
+		if(arrt.get(index).myRight!=null){
+			arrt.set(index*2+1, arrt.get(index).myRight);
+			threadhelper(arrt,index*2+1);
+		}
+	}
+
+
+
+	private static class TreeNode{
+		public Object myItem;
+		public TreeNode myLeft;
+		public TreeNode myRight;
+		public TreeNode levelList;
+
+		public TreeNode(){
+
+		}
+
+		public TreeNode(Object info){
+			myItem=info;
+			myLeft=null;
+			myRight=null;
+			levelList=null;
+		}
+
+
+		public TreeNode(Object info,TreeNode left, TreeNode Right){
+			myItem=info;
+			myLeft=left;
+			myRight=Right;
+			levelList=null;
+		}
+		public void setLevelList(TreeNode next){
+			levelList=next;
+		}
+	}
+
+	public static void main(String[] args){
+		ArrayList<Integer> ai= new ArrayList<Integer>();
+		TreeNode ptr;
+		TreeNode a = new TreeNode(1);
+		TreeNode b = new TreeNode(2);
+		TreeNode c = new TreeNode(3);
+		TreeNode d = new TreeNode(4);
+		TreeNode e = new TreeNode(5);
+		TreeNode f = new TreeNode(6);
+
+		a.myLeft=b;
+		a.myRight=c;
+
+		b.myLeft=d;
+
+		c.myLeft=e;
+		c.myRight=f;
+
+		Tree t = new Tree(a);
+		t.threadLevels();
+
+		//t.print_pre();
+
+		ptr=b;
+		while(ptr!=null){
+			System.out.print(ptr.myItem);
+			
+			ptr= ptr.levelList;
+		}
+		System.out.println();
+
+		ptr=d;
+		while(ptr!=null){
+
+			System.out.print(ptr.myItem);
+			ptr=ptr.levelList;
+		}
+
+	}
+
 }
-
-for(int i=0;i<10;i++){
-	x=4;
-	y=3;
-}
-if(x==1){
-	
-}
-
-boolean z =(x<3);
-
-int z =2;
-
 </textarea>
 
 
@@ -38,15 +187,33 @@ int z =2;
 
 <script>
 
-/*
-var a = {1,2,3,4};
-a.filter(function(x){
-	return x %2 ==0;
-})
 
 
-*/
+var vstorage = {
+	'varValue' : {}, 
+	'reference' : ["int","byte","short","long","float","double","boolean","char"],
+	'int' : [],
+	'byte' : [],
+	'short' : [],
+	'long' : [],
+	'float' : [],
+	'double' : [],
+	'boolean' : [],
+	'char' : []
 
+}
+var ostorage ={
+	'objValue' : {}
+}
+var impstorage ={
+	'impStore' : []
+}
+var classStorage ={
+	'classArrays' : {}
+}
+var methodStorage ={
+	'methodArrays' : {}
+}
 
 
 var lines =$('textarea').val().trim().split('\n');
@@ -76,20 +243,24 @@ for(var i=0;i<lines.length;i++){
 	// go through semicolon
 	temp = semicolon(temp);
 
-	// store to variable storage
-	//storeVariables(temp);
-
 	//finally add it to the storage
 	storage.push(temp);
 }
+
+
+	// store variables and objects && detect if,for,while
+// for(var i=0;i<storage.length;i++){
+	// smartParser1(temp);
+// }
+
 for(var i=0;i<storage.length;i++){
-	console.log(storage[i]);		
+	//console.log(storage[i]);		
 }
 
-console.log(vstorage.varValue);
+console.log("*************************************************");
+chunkDivider(storage);
 
-
-
+console.log("finish");
 
 
 //main helper
@@ -141,80 +312,185 @@ function brackets(lineArray){
 			retArray.push(lineArray[i]);
 		}
 	}
+
+	var retArray1=[];
+
+	for(var i=0;i<retArray.length;i++){
+		if((n=retArray[i].indexOf("{"))!=-1){
+			if(n!=0){
+				retArray1.push(retArray[i].substring(0,n));
+			}
+			retArray1.push(retArray[i].substring(n,n+1));
+			if(n+1!=retArray[i].length){
+				var str= retArray[i].substring(n+1,retArray[i].length);
+				if((n=str.indexOf("}"))!=-1){
+					if(n!=0){
+						retArray1.push(str.substring(0,n));
+					}
+					retArray1.push(str.substring(n,n+1));
+					if(n+1!=str.length){
+						retArray1.push(str.substring(n+1,str.length));
+					}
+				} else{
+					retArray1.push(str);
+				}
+			}
+		}
+		else if((n=retArray[i].indexOf("}"))!=-1){
+			if(n!=0){
+				retArray1.push(retArray[i].substring(0,n));
+			}
+			retArray1.push(retArray[i].substring(n,n+1));
+			if(n+1!=retArray.length){
+				retArray1.push(retArray[i].substring(n+1,retArray[i].length));
+			}
+		} else{
+			retArray1.push(retArray[i]);
+		}
+	}
+
 	return retArray;
 }
-function storeVariables(lineArray){
+
+function chunkDivider(entireArray){
+	var storage1 = [];
+	var index;
+	var name;
+
+	for(var i=0;i<entireArray.length;i++){
+		var temp = entireArray[i];
+		
+		if(temp[0]==="import"){
+			impstorage.impStore.push(temp[1]);
+		}
+		if(temp[0] ==="public" && temp[1] ==="class"){
+			name =temp[2]; //save name first then arrays
+			console.log(name);
+			index=1; //starting with the brackets
+
+			for(var j=i+1;j<entireArray.length;j++){
+				var temp1 = entireArray[j];
+				console.log(temp1);
+				if(index==0){
+					classStorage.classArrays[name] = storage1;
+					console.log(storage1);
+					console.log("never gets here?");
+					return;
+				}
+				if(temp1.indexOf("{")!=-1){
+					index++;
+					console.log(index);
+				} 
+				else if(temp1.indexOf("}")!=-1){
+					index--;
+					console.log(index);
+				}
+				storage1.push(temp1);
+			}
+		}
+
+
+
+	}
+
+}
+
+
+function smartParser1(lineArray){
 	if(lineArray[0]==="int"){
 		vstorage.int.push(lineArray[1]);
+		vstorage.varValue[lineArray[1]]=0;
 		if(lineArray.length>=4){
 			vstorage.varValue[lineArray[1]]=lineArray[3];
 		}
 	}
 	else if(lineArray[0]==="byte"){
 		vstorage.byte.push(lineArray[1]);
+		vstorage.varValue[lineArray[1]]=0;
 		if(lineArray.length>=4){
 			vstorage.varValue[lineArray[1]]=lineArray[3];	
 		}	
 	}
 	else if(lineArray[0]==="short"){
 		vstorage.short.push(lineArray[1]);
+		vstorage.varValue[lineArray[1]]=0;
 		if(lineArray.length>=4){
 			vstorage.varValue[lineArray[1]]=lineArray[3];
 		}
 	}
 	else if(lineArray[0]==="long"){
 		vstorage.long.push(lineArray[1]);
+		vstorage.varValue[lineArray[1]]=0;
 		if(lineArray.length>=4){
 			vstorage.varValue[lineArray[1]]=lineArray[3];
 		}
 	}
 	else if(lineArray[0]==="float"){
 		vstorage.float.push(lineArray[1]);
+		vstorage.varValue[lineArray[1]]=0.00;
 		if(lineArray.length>=4){
 			vstorage.varValue[lineArray[1]]=lineArray[3];
 		}
 	}
 	else if(lineArray[0]==="double"){
 		vstorage.double.push(lineArray[1]);
+		vstorage.varValue[lineArray[1]]=0.00;
 		if(lineArray.length>=4){
 			vstorage.varValue[lineArray[1]]=lineArray[3];
 		}
 	}
 	else if(lineArray[0]==="char"){
 		vstorage.char.push(lineArray[1]);
+		vstorage.varValue[lineArray[1]]='NUL';
 		if(lineArray.length>=4){
 			vstorage.varValue[lineArray[1]]=lineArray[3];
 		}
 	}
 	else if(lineArray[0]==="boolean"){
 		vstorage.boolean.push(lineArray[1]);
+		vstorage.varValue[lineArray[1]]=false;
 		if(lineArray.length>=4){
 			vstorage.varValue[lineArray[1]]=lineArray[3];
 		}
 	}
-	else if(lineArray[0]==="for"){
-
+	else if(lineArray[0]==="public"){
+		if(lineArray[1] in vstorage.reference){ //fix later to consider the scope case
+			smartParser1(lineArray.slice(1,lineArray.length));
+		} 
 	}
-	else if(lineArray[0]==="while"){
-
+	else if(lineArray[0]==="private"){
+		if(lineArray[1] in vstorage.reference){
+			smartparser1(lineArray.slice(1,lineArray.length));
+		}
 	}
-	else if(lineArray[0]==="if"){
-
+	else if(lineArray[0]==="protected"){
+		if(lineArray[1] in vstorage.reference){
+			smartparser1(lineArray.slice(1,lineArray.length));
+		}
+	}
+	else if(lineArray[0]==="default"){
+		if(lineArray[1] in vstorage.reference){
+			smartparser1(lineArray.slice(1,lineArray.length));
+		}
+	}
+	else if(lineArray[0]==="static"){
+		if(lineArray[1] in vstorage.reference){
+			smartparser1(lineArray.slice(1,lineArray.length));
+		}
 	}
 	else if(lineArray[0] in vstorage.varValue){
 		if(lineArray.length>=3){
 			vstorage.varValue[lineArray[0]]=lineArray[2];
 		}
-	} else{
-		throw "no such word implemented"+lineArray[0];
+	} else{  //object storage
+		vstorage.varValue[lineArray[0]]= 'null';
+		if(lineArray[1]==="="){
+			vstorage.varValue[lineArray[0]]=lineArray[2];
+		} 
+
+		//throw "no such word implemented"+lineArray[0];
 	}
-
-
-
-
-
 }
-
 
 
 function mathExpression(lineArray){
@@ -371,19 +647,22 @@ function inequalityStatement(lineArray){
 			}
 			retArray.push(lineArray[i].substring(n,n+1));
 			if(n+1 !=lineArray[i].length){
+
 				if(lineArray[i].substring(n+1,n+2)==="="){
 					retArray.pop();
 					retArray.push("==");
-					if(n+2!=lineArray.length){
+					if(n+2!=lineArray[i].length){
 						retArray.push(lineArray[i].substring(n+2,lineArray[i].length));
 					}
 				} else{
 					retArray.push(lineArray[i].substring(n+1,lineArray[i].length));
 				}
+
 			}
 		} else{
 			retArray.push(lineArray[i]);
 		}
+
 	}
 	var retArray1=[];
 
@@ -421,20 +700,28 @@ function inequalityStatement(lineArray){
 		}
 	}
 
-	return retArray2;
+	var retArray3=[];
+
+	for(var i=0;i<retArray2.length;i++){
+		if((n=retArray2[i].indexOf("!"))!=-1){
+			if(n!=0){
+				retArray3.push(retArray2[i].substring(0,n));
+			}
+			retArray3.push(retArray2[i].substring(n,n+1));
+			if((n+1) != retArray2[i].length){
+				retArray3.push(retArray2[i].substring(n+1,retArray2[i].length));
+			}
+
+		} else{
+			retArray3.push(retArray2[i]);
+		}
+	}
+
+
+
+	return retArray3;
 }
 
-var vstorage = {
-	'varValue' : {}, 
-	'int' : [],
-	'byte' : [],
-	'short' : [],
-	'long' : [],
-	'float' : [],
-	'double' : [],
-	'boolean' : [],
-	'char' : []
-}
 
 // 0-int 1-byte 2-short 3-long 4-float 5-double 6-boolean 7-char 
 
