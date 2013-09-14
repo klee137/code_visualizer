@@ -6,8 +6,55 @@
 
 <textarea>
 
-if(arrt.get(index).myLeft!=null){
+import java.util.*;
+
+public class MeasurementX {
+	int myFeet;
+	int myInches;
+
+	public MeasurementX(int feet, int inches) {
+		myFeet = feet;
+		myInches = inches;
+	}
+
+	public String toString() {
+		System.out.println("\tMeasurement toString called");
+		return new String(myFeet + "\' " + myInches + "\"");
+	}
+
+	public boolean equals(MeasurementX m) {
+		System.out.println("\tMeasurement equals called with Measurement argument");
+		return this.toString().equals(m.toString());
+	}
+	public boolean equals(Object obj) {
+		System.out.println("\tMeasurement equals called with Object argument");
+		return this.toString().equals(obj.toString());
+	}
+
 	
+	public static void main(String[] args) {
+		a.add(new MeasurementX(3, 5));
+		a.add(new MeasurementX(6, 3));
+
+		MeasurementX m1 = new MeasurementX(2, 7);
+		a.add(m1);
+
+		if (a.contains(m1)) {
+			System.out.println("CORRECT: a contains 2' 7\"");
+		} else {
+			System.out.println("INCORRECT: a doesn't contain 2' 7\"");
+		}
+
+		MeasurementX m2 = new MeasurementX(10, 9);
+		a.add(new MeasurementX(10, 9));
+
+		if (a.contains(m2)) {
+			System.out.println("CORRECT: a contains 10' 9\"");
+		} else {
+			System.out.println("INCORRECT: a doesn't contain 10' 9\"");
+		}
+	}
+
 }
 
 
@@ -38,12 +85,7 @@ var vstorage = {
 var ostorage ={
 	'objValue' : {}
 }
-var impstorage ={
-	'impStore' : []
-}
-var classStorage ={
-	'classArrays' : {}
-}
+
 var methodStorage ={
 	'methodArrays' : {}
 }
@@ -51,6 +93,8 @@ var methodStorage ={
 
 var lines =$('textarea').val().trim().split('\n');
 var storage=[];
+var Arrayclass =[];
+
 
 // program starts here
 
@@ -66,7 +110,7 @@ for(var i=0;i<lines.length;i++){
 		temp = inequalityStatement(temp);
 	}
 	// go through brackets 
-	for(var x=0;x<5;x++){
+	for(var x=0;x<10;x++){
 		temp = brackets(temp);
 	}
 	// go through math expression
@@ -77,10 +121,16 @@ for(var i=0;i<lines.length;i++){
 	for(var x=0;x<2;x++){
 		temp = semicolonM(temp);
 	}
+	for( var x=0;x<5;x++){
+		temp = commaParser(temp);
+	}
+
+
 	// go through semicolon
 	temp = semicolon(temp);
 
 	//finally add it to the storage
+	temp=temp.filter(function(a){return a!=""})
 	storage.push(temp);
 }
 
@@ -90,11 +140,26 @@ for(var i=0;i<lines.length;i++){
 	// smartParser1(temp);
 // }
 
-for(var i=0;i<storage.length;i++){
-	console.log(storage[i]);		
+//for(var i=0;i<storage.length;i++){
+//	console.log(storage[i]);		
+//}
+
+var testClass = chunkDivider(storage);
+
+console.log("name");
+console.log(testClass.name);
+console.log("import storage");
+console.log(testClass.impStore);
+console.log("array of lines");
+for(var x=0;x<testClass.classArrays.length;x++){
+	var ca = testClass.classArrays[x];
+	console.log(ca);
 }
 
-chunkDivider(storage);
+
+
+
+
 
 //main helper
 function ifStatement(){
@@ -106,6 +171,15 @@ function forStatement(){
 function whileStatement(){
 	
 }
+function classStorageCreator(){
+	var classStorage ={
+	'name' : "NA",
+	'impStore' : [],
+	'classArrays' : []
+	}
+
+	return classStorage;
+}
 
 
 //sub helper
@@ -114,7 +188,6 @@ function brackets(lineArray){
 
 	for(var i=0;i<lineArray.length;i++){
 		if((n=lineArray[i].indexOf("("))!=-1){
-			console.log(lineArray[i]);
 			if(n!=0){
 				retArray.push(lineArray[i].substring(0,n));
 			}
@@ -183,49 +256,72 @@ function brackets(lineArray){
 		}
 	}
 
-	return retArray;
+	return retArray1;
 }
+
+
+
 
 function chunkDivider(entireArray){
 	var storage1 = [];
 	var index;
-	var name;
+	var classObject = classStorageCreator();
 
 	for(var i=0;i<entireArray.length;i++){
 		var temp = entireArray[i];
 		
 		if(temp[0]==="import"){
-			impstorage.impStore.push(temp[1]);
+		classObject.impStore.push(temp[1]);
 		}
 		if(temp[0] ==="public" && temp[1] ==="class"){
-			name =temp[2]; //save name first then arrays
+			classObject.name =temp[2]; //save name first then arrays
 			index=1; //starting with the brackets
 
 			for(var j=i+1;j<entireArray.length;j++){
 				var temp1 = entireArray[j];
-				console.log(temp1);
-				if(index==0){
-					classStorage.classArrays[name] = storage1;
-					return;
-				}
+				
 				if(temp1.indexOf("{")!=-1){
 					index++;
-					console.log(index);
 				} 
-				else if(temp1.indexOf("}")!=-1){
+				if(temp1.indexOf("}")!=-1){
 					index--;
-					console.log(index);
+				}
+				if(index==0){
+					classObject.classArrays=storage1;
+					return classObject;
 				}
 				storage1.push(temp1);
-			}
+			}	
 		}
 
 
 
 	}
+	return null;
 
 }
 
+
+function commaParser(lineArray){
+	var retArray=[];
+	for(var i=0;i<lineArray.length;i++){
+		if((n=lineArray[i].indexOf(","))!=-1){
+			if(n!=0){
+				retArray.push(lineArray[i].substring(0,n));
+			}
+			retArray.push(lineArray[i].substring(n,n+1));
+			if((n+1) != lineArray[i].length){
+				retArray.push(lineArray[i].substring(n+1,lineArray[i].length));
+			}
+
+		} else{
+			retArray.push(lineArray[i]);
+		}
+	}
+
+	return retArray;
+
+}
 
 function smartParser1(lineArray){
 	if(lineArray[0]==="int"){
