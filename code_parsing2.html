@@ -6,178 +6,11 @@
 
 <textarea>
 
-import java.util.ArrayList;
-import java.util.Iterator;
-
-public class Tree {
-	private TreeNode myRoot;
-	private static int count;
-
-	public Tree(TreeNode root){
-		myRoot=root;
-	}
-
-
-
-	public void print_pre(){
-		print_prehelper(myRoot);
-	}
-
-
-	private static void print_prehelper(TreeNode t){
-		System.out.print(t.myItem);
-		if(t.myLeft!=null){
-			print_prehelper(t.myLeft);
-		}
-		if(t.myRight!=null){
-			print_prehelper(t.myRight);
-		}
-
-	}
-	private static void sizehelper(TreeNode t){
-		if(t.myLeft!=null){
-			count++;
-			sizehelper(t.myLeft);
-		}
-		if(t.myRight !=null){
-			count++;
-			sizehelper(t.myRight);
-		}
-
-	}
-
-	public void threadLevels(){
-		ArrayList<TreeNode> arrt;
-		int i;
-		int size;
-		boolean exists;
-		TreeNode prev;
-		Object help;
-
-		if(myRoot ==null){
-			return;
-		}
-		count=1;
-		sizehelper(myRoot);
-		arrt=new ArrayList<TreeNode>();
-		size=(int)Math.pow(2,count+2);
-		arrt.add(new TreeNode()); //index0 will not be used
-		arrt.add(myRoot);
-		for(int k=2;k<size;k++){
-			arrt.add(new TreeNode());
-		}
-
-
-		threadhelper(arrt,1);
-		//after setting everything
-		i=2;
-		prev=null;
-		exists=true;
-		
-
-
-		while(exists){
-			exists=false;
-			for(int index=i;index<i*i;index++){
-				if(arrt.get(index).myItem!=null){
-					if(prev!=null){
-					prev.levelList=arrt.get(index);
-					}
-					exists=true;
-					prev=arrt.get(index);
-					
-				}
-
-			}
-			prev=null;
-			i=i*i;
-		}
-
-
-	}
-	private static void threadhelper(ArrayList<TreeNode> arrt,int index){
-		if(arrt.get(index).myLeft!=null){
-			arrt.set(index*2, arrt.get(index).myLeft);
-			threadhelper(arrt,index*2);
-		}
-		if(arrt.get(index).myRight!=null){
-			arrt.set(index*2+1, arrt.get(index).myRight);
-			threadhelper(arrt,index*2+1);
-		}
-	}
-
-
-
-	private static class TreeNode{
-		public Object myItem;
-		public TreeNode myLeft;
-		public TreeNode myRight;
-		public TreeNode levelList;
-
-		public TreeNode(){
-
-		}
-
-		public TreeNode(Object info){
-			myItem=info;
-			myLeft=null;
-			myRight=null;
-			levelList=null;
-		}
-
-
-		public TreeNode(Object info,TreeNode left, TreeNode Right){
-			myItem=info;
-			myLeft=left;
-			myRight=Right;
-			levelList=null;
-		}
-		public void setLevelList(TreeNode next){
-			levelList=next;
-		}
-	}
-
-	public static void main(String[] args){
-		ArrayList<Integer> ai= new ArrayList<Integer>();
-		TreeNode ptr;
-		TreeNode a = new TreeNode(1);
-		TreeNode b = new TreeNode(2);
-		TreeNode c = new TreeNode(3);
-		TreeNode d = new TreeNode(4);
-		TreeNode e = new TreeNode(5);
-		TreeNode f = new TreeNode(6);
-
-		a.myLeft=b;
-		a.myRight=c;
-
-		b.myLeft=d;
-
-		c.myLeft=e;
-		c.myRight=f;
-
-		Tree t = new Tree(a);
-		t.threadLevels();
-
-		//t.print_pre();
-
-		ptr=b;
-		while(ptr!=null){
-			System.out.print(ptr.myItem);
-			
-			ptr= ptr.levelList;
-		}
-		System.out.println();
-
-		ptr=d;
-		while(ptr!=null){
-
-			System.out.print(ptr.myItem);
-			ptr=ptr.levelList;
-		}
-
-	}
-
+if(arrt.get(index).myLeft!=null){
+	
 }
+
+
 </textarea>
 
 
@@ -229,9 +62,13 @@ for(var i=0;i<lines.length;i++){
 
 	temp = temp.split(' ');
 	//go through inequality signs < = == >
-	temp = inequalityStatement(temp);
+	for(var x=0;x<5;x++){
+		temp = inequalityStatement(temp);
+	}
 	// go through brackets 
-	temp = brackets(temp);
+	for(var x=0;x<5;x++){
+		temp = brackets(temp);
+	}
 	// go through math expression
 	for(var x=0;x<5;x++){
 		temp = mathExpression(temp);
@@ -254,14 +91,10 @@ for(var i=0;i<lines.length;i++){
 // }
 
 for(var i=0;i<storage.length;i++){
-	//console.log(storage[i]);		
+	console.log(storage[i]);		
 }
 
-console.log("*************************************************");
 chunkDivider(storage);
-
-console.log("finish");
-
 
 //main helper
 function ifStatement(){
@@ -281,6 +114,7 @@ function brackets(lineArray){
 
 	for(var i=0;i<lineArray.length;i++){
 		if((n=lineArray[i].indexOf("("))!=-1){
+			console.log(lineArray[i]);
 			if(n!=0){
 				retArray.push(lineArray[i].substring(0,n));
 			}
@@ -305,7 +139,7 @@ function brackets(lineArray){
 				retArray.push(lineArray[i].substring(0,n));
 			}
 			retArray.push(lineArray[i].substring(n,n+1));
-			if(n+1!=lineArray.length){
+			if(n+1!=lineArray[i].length){
 				retArray.push(lineArray[i].substring(n+1,lineArray[i].length));
 			}
 		} else{
@@ -365,7 +199,6 @@ function chunkDivider(entireArray){
 		}
 		if(temp[0] ==="public" && temp[1] ==="class"){
 			name =temp[2]; //save name first then arrays
-			console.log(name);
 			index=1; //starting with the brackets
 
 			for(var j=i+1;j<entireArray.length;j++){
@@ -373,8 +206,6 @@ function chunkDivider(entireArray){
 				console.log(temp1);
 				if(index==0){
 					classStorage.classArrays[name] = storage1;
-					console.log(storage1);
-					console.log("never gets here?");
 					return;
 				}
 				if(temp1.indexOf("{")!=-1){
