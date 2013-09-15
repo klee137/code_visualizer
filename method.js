@@ -1,5 +1,4 @@
-function method(className, lineNum){
-	this.class_name = className;
+function method(lineNum){
 	this.method_name;
 	this.start_line = lineNum;
 	this.visibility_type = "default";
@@ -66,7 +65,7 @@ function method(className, lineNum){
 		}
 	}
 
-	for(i = lineNum; i <= temp2; i++){
+	for(i = lineNum+1; i < temp2; i++){
 		this.content_lines[temp1]=retArray[i];
 		temp1++;
 	}
