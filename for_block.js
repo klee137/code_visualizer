@@ -39,12 +39,10 @@ function for_block(array_lines, vstorage){
 		temp = start_index[a];
 		var b;
 		for(b=2; !temp_cond; b++){
-			console.log(b);
 			if(array_lines[temp][b]==="int" || array_lines[temp][b]==="double" || array_lines[temp][b]==="String" || array_lines[temp][b]==="char" || array_lines[temp][b]==="Int" || array_lines[temp][b]==="boolean"){
 				b++;
 			}
 			if(isNaN(array_lines[temp][b]) && isValid(array_lines[temp][b])){
-				console.log(array_lines[temp][b]);
 				eval(array_lines[temp][b] +"="+ "2"); // vstorage[array_lines[temp1][b]].toString());
 				temp_cond = 1;
 			}
@@ -69,7 +67,6 @@ function for_block(array_lines, vstorage){
 			eval(increment);
 		}
 	}
-	console.log(start_index);
 
 	for(var a=0; a<array_lines.length; a++){
 		if(a==start_index[0]){
@@ -85,6 +82,5 @@ function for_block(array_lines, vstorage){
 		}
 		return_lines.push(array_lines[a]);
 	}
-	console.log(return_lines);
 	return return_lines;
 }
