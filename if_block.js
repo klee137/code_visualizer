@@ -21,7 +21,7 @@ function if_block(array_lines,vstorage){
 	for(var a=0; a<start_index.length; a++){
 		temp1=1; //starts at 1 because if line contains open bracket
 		for(var b=start_index[a]+1; b<start_index.length; b++){
-			for(var c=0; c<(array_lines[b]).length; c++){
+			for(var c=0; c<array_lines[b].length; c++){
 				if(array_lines[b][c]==="{"){
 					temp1++;
 				}else if(array_lines[b][c]==="}"){
