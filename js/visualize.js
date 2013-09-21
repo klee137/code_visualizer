@@ -6,18 +6,29 @@ function findRefs(vars){
 
 }
 
-function round(numstring){
-	var cutoff = 8;
+function round(numstring, cutoff){
+	cutoff = cutoff || 8;
+    console.log(cutoff)
+    var max = Math.pow(10, cutoff);
 	if (!isNaN(parseInt(numstring ,10))){						//int
-
+        if (parseInt(numstring ,10) > max){
+            return (numstring + "").substr(0, 5) + "...";
+        }
 	} else if (!isNaN(parseFloat(numstring ,10))){				//float
-
+        var str = (numstring + "")
+        if (str.length > cutoff){
+            return str.substr(0, 5) + "...";
+        }
 	} else if (numstring == "True" || numstring == "False"){	//boolean
-
+        return numstring;
 	} else if (numstring.length == 1){							//char
-
+        return numstring;
 	} else {													//string
-
+        if (numstring.length > cutoff){
+            return numstring.substr(0, 5) + "..."
+        } else {
+            return numstring;
+        }
 	}
 }
 
@@ -32,22 +43,110 @@ function visualize(vars, references) {
 
 
 
-function force(data){
-	var width = 960,
-	    height = 500;
+var force;
+// var svg = d3.select('#view')
+//         .append("g");
+var link, node;
+var nodeCount = 0;
 
-	var color = d3.scale.category20();
+function start(){
+  var width = window.innerWidth*.92,
+      height = window.innerHeight;
 
-	var force = d3.layout.force()
-	    .charge(-120)
-	    .linkDistance(30)
-	    .size([width, height]);
+  var color = d3.scale.category20();
 
-	var svg = d3.select("body").append("svg")
-	    .attr("width", width)
-	    .attr("height", height);
+  force = d3.layout.force()
+      .gravity(.05)
+      .distance(100)
+      .charge(-100)
+      .linkDistance(30)
+      .size([width, height])
+      .nodes(graph.nodes)
+      .links(graph.links)
+      .start();
 
-	graph = {
+    //var svg = d3.select("body").append("svg")
+    var svg = d3.select('svg')
+        .attr("width", width)
+        .attr("height", height)
+        .append("g")
+        .attr('class', 'mainG')
+        .call(d3.behavior.drag().on("drag", drag));
+
+
+
+    svg.append("rect")
+        .attr("class", "overlay")
+        .attr("width", width)
+        .attr("height", height);
+
+    function drag() {
+        var d = d3.event;
+        var curr = $('.mainG').attr("transform") || "translate(0,0)scale(1)";
+        //curr = curr.replace("translate", "").replace("(", "").replace(")", "");
+        curr = curr.replace("translate(","").replace(")","").replace(")","").split("scale(");
+        var newX = parseFloat(curr[0].split(",")[0], 10) + parseFloat(d.dx, 10);
+        var newY = parseFloat(curr[0].split(",")[1], 10) + parseFloat(d.dy, 10);
+        var currScale = parseFloat(curr[1], 10);
+        $('.mainG').attr("transform", "translate(" + newX + "," + newY + ")" + "scale("+ currScale +")");
+    }
+
+    
+
+    link = svg.selectAll(".link")
+        .data(graph.links)
+      .enter().append("line")
+        .attr("class", "link");
+
+    node = svg.selectAll(".node")
+        .data(graph.nodes)
+      .enter().append("g");
+
+    node.append("circle")
+        .attr("class", "node")
+        .attr("r", 7)
+        .style("fill", function(d) { return color(d.group); })
+        .attr("id", function(d){ return d.name })
+        .on("click", function(d) {
+            //clicking on a node changes it's style
+            var self = $(this);
+            $('.node').attr("class", "node");
+            self.attr("class", "node selected");
+            clickNode(d);
+        });
+        
+
+    node.append("text")
+        .attr("dx", 12)
+        .attr("dy", ".35em")
+        .text(function(d) { return d.name })
+        
+
+
+    force.on("tick", function() {
+      link.attr("x1", function(d) { return d.source.x; })
+          .attr("y1", function(d) { return d.source.y; })
+          .attr("x2", function(d) { return d.target.x; })
+          .attr("y2", function(d) { return d.target.y; });
+
+      node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+    });
+    
+}
+
+
+//when a node is clicked
+function clickNode(d){
+    var name = d.name;
+
+    //open up the detail window
+}
+
+// var graph = {
+//     "nodes":[],
+//     "links":[]
+// }
+var graph = {
 "nodes":[
     {"name":"Myriel","group":1},
     {"name":"Napoleon","group":1},
@@ -231,191 +330,36 @@ function force(data){
     {"source":42,"target":25,"value":2},
     {"source":42,"target":24,"value":1},
     {"source":43,"target":11,"value":3},
-    {"source":43,"target":26,"value":1},
-    {"source":43,"target":27,"value":1},
-    {"source":44,"target":28,"value":3},
-    {"source":44,"target":11,"value":1},
-    {"source":45,"target":28,"value":2},
-    {"source":47,"target":46,"value":1},
-    {"source":48,"target":47,"value":2},
-    {"source":48,"target":25,"value":1},
-    {"source":48,"target":27,"value":1},
-    {"source":48,"target":11,"value":1},
-    {"source":49,"target":26,"value":3},
-    {"source":49,"target":11,"value":2},
-    {"source":50,"target":49,"value":1},
-    {"source":50,"target":24,"value":1},
-    {"source":51,"target":49,"value":9},
-    {"source":51,"target":26,"value":2},
-    {"source":51,"target":11,"value":2},
-    {"source":52,"target":51,"value":1},
-    {"source":52,"target":39,"value":1},
-    {"source":53,"target":51,"value":1},
-    {"source":54,"target":51,"value":2},
-    {"source":54,"target":49,"value":1},
-    {"source":54,"target":26,"value":1},
-    {"source":55,"target":51,"value":6},
-    {"source":55,"target":49,"value":12},
-    {"source":55,"target":39,"value":1},
-    {"source":55,"target":54,"value":1},
-    {"source":55,"target":26,"value":21},
-    {"source":55,"target":11,"value":19},
-    {"source":55,"target":16,"value":1},
-    {"source":55,"target":25,"value":2},
-    {"source":55,"target":41,"value":5},
-    {"source":55,"target":48,"value":4},
-    {"source":56,"target":49,"value":1},
-    {"source":56,"target":55,"value":1},
-    {"source":57,"target":55,"value":1},
-    {"source":57,"target":41,"value":1},
-    {"source":57,"target":48,"value":1},
-    {"source":58,"target":55,"value":7},
-    {"source":58,"target":48,"value":7},
-    {"source":58,"target":27,"value":6},
-    {"source":58,"target":57,"value":1},
-    {"source":58,"target":11,"value":4},
-    {"source":59,"target":58,"value":15},
-    {"source":59,"target":55,"value":5},
-    {"source":59,"target":48,"value":6},
-    {"source":59,"target":57,"value":2},
-    {"source":60,"target":48,"value":1},
-    {"source":60,"target":58,"value":4},
-    {"source":60,"target":59,"value":2},
-    {"source":61,"target":48,"value":2},
-    {"source":61,"target":58,"value":6},
-    {"source":61,"target":60,"value":2},
-    {"source":61,"target":59,"value":5},
-    {"source":61,"target":57,"value":1},
-    {"source":61,"target":55,"value":1},
-    {"source":62,"target":55,"value":9},
-    {"source":62,"target":58,"value":17},
-    {"source":62,"target":59,"value":13},
-    {"source":62,"target":48,"value":7},
-    {"source":62,"target":57,"value":2},
-    {"source":62,"target":41,"value":1},
-    {"source":62,"target":61,"value":6},
-    {"source":62,"target":60,"value":3},
-    {"source":63,"target":59,"value":5},
-    {"source":63,"target":48,"value":5},
-    {"source":63,"target":62,"value":6},
-    {"source":63,"target":57,"value":2},
-    {"source":63,"target":58,"value":4},
-    {"source":63,"target":61,"value":3},
-    {"source":63,"target":60,"value":2},
-    {"source":63,"target":55,"value":1},
-    {"source":64,"target":55,"value":5},
-    {"source":64,"target":62,"value":12},
-    {"source":64,"target":48,"value":5},
-    {"source":64,"target":63,"value":4},
-    {"source":64,"target":58,"value":10},
-    {"source":64,"target":61,"value":6},
-    {"source":64,"target":60,"value":2},
-    {"source":64,"target":59,"value":9},
-    {"source":64,"target":57,"value":1},
-    {"source":64,"target":11,"value":1},
-    {"source":65,"target":63,"value":5},
-    {"source":65,"target":64,"value":7},
-    {"source":65,"target":48,"value":3},
-    {"source":65,"target":62,"value":5},
-    {"source":65,"target":58,"value":5},
-    {"source":65,"target":61,"value":5},
-    {"source":65,"target":60,"value":2},
-    {"source":65,"target":59,"value":5},
-    {"source":65,"target":57,"value":1},
-    {"source":65,"target":55,"value":2},
-    {"source":66,"target":64,"value":3},
-    {"source":66,"target":58,"value":3},
-    {"source":66,"target":59,"value":1},
-    {"source":66,"target":62,"value":2},
-    {"source":66,"target":65,"value":2},
-    {"source":66,"target":48,"value":1},
-    {"source":66,"target":63,"value":1},
-    {"source":66,"target":61,"value":1},
-    {"source":66,"target":60,"value":1},
-    {"source":67,"target":57,"value":3},
-    {"source":68,"target":25,"value":5},
-    {"source":68,"target":11,"value":1},
-    {"source":68,"target":24,"value":1},
-    {"source":68,"target":27,"value":1},
-    {"source":68,"target":48,"value":1},
-    {"source":68,"target":41,"value":1},
-    {"source":69,"target":25,"value":6},
-    {"source":69,"target":68,"value":6},
-    {"source":69,"target":11,"value":1},
-    {"source":69,"target":24,"value":1},
-    {"source":69,"target":27,"value":2},
-    {"source":69,"target":48,"value":1},
-    {"source":69,"target":41,"value":1},
-    {"source":70,"target":25,"value":4},
-    {"source":70,"target":69,"value":4},
-    {"source":70,"target":68,"value":4},
-    {"source":70,"target":11,"value":1},
-    {"source":70,"target":24,"value":1},
-    {"source":70,"target":27,"value":1},
-    {"source":70,"target":41,"value":1},
-    {"source":70,"target":58,"value":1},
-    {"source":71,"target":27,"value":1},
-    {"source":71,"target":69,"value":2},
-    {"source":71,"target":68,"value":2},
-    {"source":71,"target":70,"value":2},
-    {"source":71,"target":11,"value":1},
-    {"source":71,"target":48,"value":1},
-    {"source":71,"target":41,"value":1},
-    {"source":71,"target":25,"value":1},
-    {"source":72,"target":26,"value":2},
-    {"source":72,"target":27,"value":1},
-    {"source":72,"target":11,"value":1},
-    {"source":73,"target":48,"value":2},
-    {"source":74,"target":48,"value":2},
-    {"source":74,"target":73,"value":3},
-    {"source":75,"target":69,"value":3},
-    {"source":75,"target":68,"value":3},
-    {"source":75,"target":25,"value":3},
-    {"source":75,"target":48,"value":1},
-    {"source":75,"target":41,"value":1},
-    {"source":75,"target":70,"value":1},
-    {"source":75,"target":71,"value":1},
-    {"source":76,"target":64,"value":1},
-    {"source":76,"target":65,"value":1},
-    {"source":76,"target":66,"value":1},
-    {"source":76,"target":63,"value":1},
-    {"source":76,"target":62,"value":1},
-    {"source":76,"target":48,"value":1},
-    {"source":76,"target":58,"value":1}
   ]
 }
-	  force
-	      .nodes(graph.nodes)
-	      .links(graph.links)
-	      .start();
 
-	  var link = svg.selectAll(".link")
-	      .data(graph.links)
-	    .enter().append("line")
-	      .attr("class", "link")
-	      .style("stroke-width", function(d) { return Math.sqrt(d.value); });
 
-	  var node = svg.selectAll(".node")
-	      .data(graph.nodes)
-	    .enter().append("circle")
-	      .attr("class", "node")
-	      .attr("r", 5)
-	      .style("fill", function(d) { return color(d.group); })
-	      .call(force.drag);
+//takes an array of pieces
+function fillGraph(line){
+    //empty graph
+    graph = {
+        "nodes": [],
+        "links": [],
+    }
 
-	  node.append("title")
-	      .text(function(d) { return d.name; });
+    var shtml = "";
+    for (var i in line){
+        //check if class
+        var n = {"name": line[i], "group": 1};
+        graph["nodes"].push(n);
 
-	  force.on("tick", function() {
-	    link.attr("x1", function(d) { return d.source.x; })
-	        .attr("y1", function(d) { return d.source.y; })
-	        .attr("x2", function(d) { return d.target.x; })
-	        .attr("y2", function(d) { return d.target.y; });
+        //add to shelf
+        shtml += "<li class='shelfItem'>"
+            + line[i]
+            + "</li>";
+    }
 
-	    node.attr("cx", function(d) { return d.x; })
-	        .attr("cy", function(d) { return d.y; });
-	  });
+    $('#shelfList').html(shtml);
 }
 
-force();
-force();
+
+
+
+
+
+

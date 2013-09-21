@@ -2,11 +2,11 @@
 <html>
 <head>
 	<!-- These are like the include files in C/Java.  They import stuff -->
-	<link href="css/style.css" rel="stylesheet">
-	<script src="http://code.jquery.com/jquery-latest.js"></script>
+	<script src="js/jquery-latest.js"></script>
 	<script type="text/javascript" src="http://api.filepicker.io/v1/filepicker.js"></script>
 	<script src="http://www.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
 	<link href="http://www.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet">
+	<link href="css/style.css" rel="stylesheet">
 	<script src="js/spot.js"></script>
 	<script src="http://d3js.org/d3.v3.min.js"></script>
 	<script src="js/visualize.js"></script>
@@ -15,16 +15,65 @@
 
 <body style="margin:0">
 <!-- These are elements on the page like buttons and containers -->
+<ul id="setList">
+	<li class="set chosen">
+		Code
+	</li>
+	<li class="set">
+		Paste
+	</li>
+	<li class="set">
+		Upload
+	</li>
+	<li class="set">
+		Stats
+	</li>
+	<li class="set">
+		Run
+	</li>
+</ul>
+<div class="cover"></div>
 <nav class='left'>
-	<button class='btn btn-default' id='zoomin'>+</button><br>
-	<button class='btn btn-default' id='zoomout'>-</button><br><br>
 
-	<!--<input type="file" id="files" name="files[]" multiple />-->
-	<button class='btn btn-primary' id='uploadBtn' onClick='uploadFile()'>Upload</button><br><br>
-	<button class='btn btn-primary' id='pasteBtn'>Paste</button><br><br>
-	<button class='btn btn-primary' id='runBtn'>Run!</button>	
+	<button class='btn btn-default' id='zoomin' onClick='zoomin()'>+</button><br><br>
+	<button class='btn btn-default' id='zoomout' onClick='zoomout()'>-</button><br><br>
+
+	<button class='btn btn-default' id="settings">
+		<span class="glyphicon glyphicon-cog menuBtn"></span>
+	</button>
+	
+	<!-- <div class="btn-group">
+	  <button class='btn btn-primary' id='runBtn' onClick='start()'>
+	  	<span class="glyphicon glyphicon-play"></span>
+	  </button>	
+	  <button type="button" class="btn btn-danger dropdown-toggle" data-toggle="dropdown">
+	    <span class="caret"></span>
+	  </button>
+	  <ul class="dropdown-menu" role="menu">
+	    <li><a href="#" onClick='uploadFile()'>Upload</a></li>
+	    <li><a href="#" onClick=''>Paste</a></li>
+	  </ul>
+	</div>
+ -->
+	<!--
+	<button class='btn btn-primary menuBtn' id='uploadBtn' onClick='uploadFile()'>Upload</button><br><br>
+	<button class='btn btn-primary menuBtn' id='pasteBtn'>Paste</button><br><br>
+	<button class='btn btn-primary menuBtn' id='runBtn' onClick='start()'>Run!</button>	
+-->
 </nav>
-<section class='shelf'></section>
+<section class='shelf'>
+	<ul id='shelfList'>
+		<!--
+		<li class='shelfItem'>
+			Test1
+		</li>
+		<li class='shelfItem'>
+			Test1
+		</li>-->
+	</ul>
+	<i class="glyphicon glyphicon-chevron-left shelfLeft"></i>
+	<i class="glyphicon glyphicon-chevron-right shelfRight"></i>
+</section>
 <textarea class='code'>
 boolean a;
 int x=2;
@@ -33,6 +82,60 @@ int y=3;
 x =3 ;
 z=4;
 </textarea>
+
+<div class="svgBox">
+	<svg id='view'></svg>
+</div>
+
+<div id="magicBtn">M</div>
+
+
+<div class="modal fade" id="detail">
+  <div class="modal-dialog" style="width:90%">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">Object Name</h4>
+      </div>
+      <div class="modal-body">
+        <div id="objectDetail"></div>
+			<blockquote id="detailPane" class="lead">
+				<p>Sleepy Alex is asleep.  Is Alex asleep, or is Alex asleep?  Has he entered the Matrix?  If so, he might be stuck.  What is real?</p>
+				<dl class="dl-horizontal" id="detailList">
+				  <dt>name</dt>
+				  	<dd>...</dd>
+				  <dt>value</dt>
+				  	<dd>...</dd>
+				  <dt>references</dt>
+				  	<dd>...</dd>
+				</dl>
+			</blockquote>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+<!--
+<div id="detail">
+	<div id="closeDetail"></div>
+	<div id="objectDetail"></div>
+	<blockquote id="detailPane" class="lead">
+		<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.</p>
+		<dl class="dl-horizontal" id="detailList">
+		  <dt>name</dt>
+		  	<dd>...</dd>
+		  <dt>value</dt>
+		  	<dd>...</dd>
+		  <dt>references</dt>
+		  	<dd>...</dd>
+		</dl>
+	</blockquote>
+</div>
+-->
 
 <!-- ACTUAL CODE STUFF -->
 <script src="js/user-interface.js"></script>
