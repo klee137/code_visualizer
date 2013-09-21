@@ -6,37 +6,26 @@
 
 <textarea>
 
-import java.util.Scanner;
+import java.util.*;
 
 
-public class digit_solitaire {
-
-
-
+public class Tree {
+	int i=0;
+	int j;
+	int count;
 
 	public static void main(String[] args) {
-		Scanner s = new Scanner(System.in);
-		int i;
-		int j;
-		
-		i=s.nextInt();
-		
-		if(i==0){
-			System.exit(0);
-		}
-		
-		System.out.print(i+" ");
-		
-		while(i>=10){
-			j=1;
-			while(i>0){
-				j*=i%10;
-				i=i/10;
-			}
-			System.out.print(j+" ");
-			
-			i=j;
-		}
+		TreeNode t = new TreeNode("myTree");
+		j=5;
+	
+	}
+	public void add(){
+		j=5;
+
+	}
+	private class TreeNode{
+		int value;
+		char name;
 	}
 
 }
@@ -57,20 +46,14 @@ var ostorage ={
 	'objValue' : {}
 }
 
-var methodStorage ={
-	'methodArrays' : {}
-}
-
-
 Array.prototype.visibility = function( ){
-
-	if(this.indexOf("public")){
+	if(this.indexOf("public")!=-1){
 		return "public";
 	}
-	else if(this.indexOf("private")){
+	else if(this.indexOf("private")!=-1){
 		return "private";
 	}
-	else if(this.indexOf("protected")){
+	else if(this.indexOf("protected")!=-1){
 		return "protected";
 	}
 	else{
@@ -79,7 +62,6 @@ Array.prototype.visibility = function( ){
 
 }
 String.prototype.primitive = function(){
-	console.log(this);
 	if(this =="int"){
 		return "int";
 	}
@@ -113,18 +95,19 @@ String.prototype.primitive = function(){
 //VARIABLES 
 function variable(){
 	this.type;
-	this.value;
-	this.isStatic = false;
+	this.value=0;
+	this.is_static = false;
 	this.visibility_type = "default";
 }
 
 
 function classStorage(){
-	this.name ="NA";
-	this.impStore = [];
-	this.classArrays = [];
-	this.vstorage = {};
-	this.mstorage = [];
+	this.name ="NA"; 
+	this.visibility;
+	this.impStore = []; //stores import storage
+	this.vstorage = {};	//stores variable storage
+	this.mstorage = []; //stores method storage
+	this.pstorage = []; //stores private class
 }
 
 function method(){
@@ -132,9 +115,8 @@ function method(){
 	this.is_static = false;
 	this.return_type;
 	this.method_name;
-	this.vstorage = [];
+	this.vstorage = {};
 	this.args = [];
-
 	this.content_lines =[];
 }
 
@@ -153,8 +135,6 @@ for(var i=0;i<lines.length;i++){
 	storage.push(parser(temp));
 }
 
-
-
 var testClass = classOrganizer(storage);
 
 for(var i=0;i<testClass.mstorage.length;i++){
@@ -162,20 +142,12 @@ for(var i=0;i<testClass.mstorage.length;i++){
 }
 
 
-var testLines = testClass.classArrays;
-
-
-
 //testing area
-/*
+
 console.log("name");
 console.log(testClass.name);
 console.log("import storage");
 console.log(testClass.impStore);
-console.log("array of lines");
-for(var x=0;x<testClass.classArrays.length;x++){
-	console.log(testClass.classArrays[x]);
-}
 console.log("method storage");
 console.log(testClass.mstorage[0].visibility_type +" "+testClass.mstorage[0].is_static +" "+testClass.mstorage[0].return_type+" "+testClass.mstorage[0].method_name);
 var testArray = testClass.mstorage[0].content_lines;
@@ -183,7 +155,7 @@ for(var i=0;i<testArray.length;i++){
 	console.log(testArray[i]);
 }
 
-*/
+
 
 
 
@@ -201,14 +173,6 @@ function if_block(array_lines,vstorage){
 	var temp1=0;
 	var statement;
 	var return_lines =[];
-
-/*	var variableStorage ={};
-	variableStorage["x"] = 5;
-	variableStorage["y"] = 6;
-
-	(first in variableStorage)  true
-
-	eval(variableStorage["x"]+6); */
 
 	for(var a=0; a<array_lines.length; a++){
 		for(var b=0; b<array_lines[a].length; b++){
@@ -240,7 +204,8 @@ function if_block(array_lines,vstorage){
 		
 		for(var b=2; array_lines[temp1][b]!==")"; b++){ //b=2 because first two elements are "if" and "("
 			if(isNaN(array_lines[temp1][b]) && isValid(array_lines[temp1][b])){
-				eval(array_lines[temp1][b] +"="+"'0'"); // vstorage[array_lines[temp1][b]].toString());
+				console.log(vstorage[array_lines[temp1][b]]);
+				eval(array_lines[temp1][b] +"="+(vstorage[array_lines[temp1][b]]).value.toString());
 			}
 			statement = statement + array_lines[temp1][b];
 		}
@@ -279,114 +244,158 @@ function whileStatement(){
 
 
 function classOrganizer(entireArray){
-	var storage1 = []; //for class content
 	var index;
 	var classObject = new classStorage();
 	var storage2 = []; //for method content
 	//initialize the variables
 
-	for(var i=0;i<entireArray.length;i++){
+	for(i=0;i<entireArray.length;i++){
 		var temp = entireArray[i];
 		
 		if(temp[0]==="import"){
-			classObject.impStore.push(temp[1]);
+			classObject.impStore.push(temp.splice(1,temp.length));
 		}
 		else if(temp[0] ==="public" && temp[1] ==="class"){
 			classObject.name =temp[2]; //save name first then arrays
-			index=1; //starting with the brackets
+			classObject.visibility = "public";
+
+			index=endbracket(entireArray,i+1);
 			for(i=i+1;i<entireArray.length;i++){
 				var temp1 = entireArray[i];
-				if((temp1.indexOf("(")!=-1 && temp1.indexOf(")")!=-1) && temp1.indexOf("{")!=-1){
-					//store variables
-					storage1.push(temp1);
-					var myMethod = new method();
-					var index1=1;
-
-					//store visibility
-					myMethod.visibility_type= temp1.visibility();
-					//check static
-					temp1.indexOf("static")!=-1;
-					
-
-					myMethod.return_type = temp1[temp1.indexOf("(")-2];
-					myMethod.method_name = temp1[temp1.indexOf("(")-1];
-					var tracker=1;
-					//store arguments
-					while(true){
-						myMethod.args.push(temp1[temp1.indexOf("(")+tracker]);
-						myMethod.args.push(temp1[temp1.indexOf("(")+tracker+1]);
-
-						if(temp1[temp1.indexOf("(")+tracker+2]!=","){
-							break;
-						}
-						tracker=tracker+3;
-					}
-					//go through the content && tells when it ends
-					for(i=i+1;i<entireArray.length;i++){
-						temp2 = entireArray[i];
-
-						if((s=temp2[0].primitive())!=""){
-							console.log(s);
-
-							var vinstance = new variable();
-
-
-							vinstance.type=s;
-							vinstance.value =temp2[3];
-							vinstance.is_static = temp2.indexOf("static")!=-1;
-							vinstance.visibility_type=temp2.visibility();
-							myMethod.vstorage[temp2[1]]=vinstance; 
-						}
-						if(temp2.indexOf("{")!=-1){
-							index1++;
-						}
-						if(temp2.indexOf("}")!=-1){
-							index1--;
-						}
-						if(index1==0){
-							myMethod.content_lines=storage2;
-							storage1.push(temp2);
-							classObject.mstorage.push(myMethod);
-							break;
-						}
-						storage1.push(temp2);
-						storage2.push(temp2);
-					}
-
+				if((temp1.indexOf("(")!=-1 && temp1.indexOf(")")!=-1) && temp1.indexOf("{")!=-1){ //method case
+					classObject.mstorage.push(methodmaker(entireArray,i));
+					i=endbracket(entireArray,i+1);
 				} 
 				else if((s=temp1[0].primitive())!==""){
 					var vinstance = new variable();
 
 					vinstance.type=s;
-					vinstance.value =temp1[3];
+					if(temp1[2]==="="){
+						vinstance.value =temp1[3];
+					}
 					vinstance.is_static = temp1.indexOf("static")!=-1;
 					vinstance.visibility_type=temp1.visibility();
 
 					classObject.vstorage[temp1[1]]=vinstance; 
 
 				}
-				else{
-					if(temp1.indexOf("{")!=-1){
-						index++;
-					}
-					if(temp1.indexOf("}")!=-1){
-						index--;
-					}
-					if(index==0){
-						classObject.classArrays=storage1;
-						break;
-					}
-					storage1.push(temp1);
+				else if(temp1[0] in classObject.vstorage){
+					if(!isNaN(temp1[2]))
+					classObject.vstorage[temp1[0]]=temp1[2];
 				}
+				//private class case
+				else if(temp1[0]==="private" && temp1[1] ==="class"){
+					var pClassObject = new classStorage();
+					pClassObject.name = temp1[2];
+					pClassObject.visibility = "private";
+					var index1=endbracket(entireArray,i+1);
+					for(i=i+1;i<entireArray.length;i++){
+
+						if((s=entireArray[i][0].primitive())!==""){
+							var vinstance = new variable();
+							vinstance.type=s;
+							if(entireArray[i][2]==="="){
+								vinstance.value =entireArray[i][3];
+							}
+							vinstance.is_static = entireArray[i].indexOf("static")!=-1;
+							vinstance.visibility_type=entireArray[i].visibility();
+							pClassObject.vstorage[entireArray[i][1]]=vinstance; 
+						}
+						else if(entireArray[i][0] in pClassObject.vstorage){
+							if(!NaN(entireArray[i][2]))
+							pClassObject.vstorage[entireArray[i][0]]=entireArray[i][2];
+
+						}
+						else if((temp1.indexOf("(")!=-1 && temp1.indexOf(")")!=-1) && temp1.indexOf("{")!=-1){
+							pclassObject.mstorage.push(pclassObject.methodmaker(entireArray,i));
+							i=endbracket(entireArray,i+1);
+						}
+						else if(index1==i){
+							classObject.pstorage.push(pClassObject);
+							break;
+						}
+					}
+				}
+				else if(i==index){
+					break;
+				}
+
 			}
 
 		} 
 	}
-	classObject.classArrays=storage1;
 	return classObject;
 
 }
 
+function methodmaker(entireArray,i){
+		var myMethod = new method();
+		var storage2 = [];
+
+		//measures index
+		index= endbracket(entireArray,i+1);
+		//store visibility
+		myMethod.visibility_type= entireArray[i].visibility();
+		//check static
+		myMethod.is_static=entireArray[i].indexOf("static")!=-1;
+		myMethod.return_type = entireArray[i][entireArray[i].indexOf("(")-2];
+		myMethod.method_name = entireArray[i][entireArray[i].indexOf("(")-1];
+		var tracker=1;
+		//store arguments
+		while(true){
+			myMethod.args.push(entireArray[i][entireArray[i].indexOf("(")+tracker]);
+			myMethod.args.push(entireArray[i][entireArray[i].indexOf("(")+tracker+1]);
+
+			if(entireArray[i][entireArray[i].indexOf("(")+tracker+2]!=","){
+				break;
+			}
+			tracker=tracker+3;
+		}
+		//go through the content && tells when it ends
+		for(i=i+1;i<entireArray.length;i++){
+			temp2 = entireArray[i];
+
+			if((s=temp2[0].primitive())!=""){
+				var vinstance = new variable();
+
+				vinstance.type=s;
+				//do if equalized
+				if(temp2[2]==="="){
+					vinstance.value =temp2[3];
+				}
+				vinstance.is_static = (temp2.indexOf("static")!=-1);
+				vinstance.visibility_type=temp2.visibility();
+				myMethod.vstorage[temp2[1]]=vinstance; 
+			}
+			if(temp2[0] in myMethod.vstorage){
+				if(!isNaN(temp2[2])){
+					myMethod.vstorage[temp2[0]].value=temp2[2];
+				}
+			}
+			if(i==index){
+				myMethod.content_lines=storage2;
+				return myMethod;
+			}
+			storage2.push(temp2);
+		}	
+		return null;
+}
+function endbracket(entireArray,i){
+	var index=1;
+
+	for(var x=i+1;x<entireArray.length;x++){
+		if(entireArray[x].indexOf("{")!=-1){
+			index++;
+		}
+		if(entireArray[x].indexOf("}")!=-1){
+			index--;
+			if(index==0){
+				return x;
+			}
+		}
+	}
+	return -1; // error detector
+}
 function parser(temp){
 	temp = temp.split(' ');
 	//go through inequality signs < = == >
