@@ -279,7 +279,7 @@ int x = 5;
 			testClass = classOrganizer(storage);
 
 			for(var i=0;i<testClass.mstorage.length;i++){
-				testClass.mstorage[i].content_lines = if_block(testClass.mstorage[i].content_lines,testClass.mstorage[i].vstorage);
+				//testClass.mstorage[i].content_lines = if_block(testClass.mstorage[i].content_lines,testClass.mstorage[i].vstorage);
 			}
 
 
@@ -303,10 +303,9 @@ int x = 5;
 
 
 
-	//main helper
-		//output: array of lines without if statement
-	//make new array_lines, but don't add the if statements, making the new array_lines concise
-	//ONLY add the if statements whose conditions are true, without the if(){}
+	//output: array of lines without if statement
+//make new array_lines, but don't add the if statements, making the new array_lines concise
+//ONLY add the if statements whose conditions are true, without the if(){}
 	function if_block(array_lines,vstorage){
 		var start_index =[];
 		var end_index =[];
@@ -327,7 +326,7 @@ int x = 5;
 		for(var a=0; a<start_index.length; a++){
 			temp1=1; //starts at 1 because if line contains open bracket
 			for(var b=start_index[a]+1; b<start_index.length; b++){
-				for(var c=0; c<(array_lines[b]).length; c++){
+				for(var c=0; c<array_lines[b].length; c++){
 					if(array_lines[b][c]==="{"){
 						temp1++;
 					}else if(array_lines[b][c]==="}"){
@@ -346,8 +345,7 @@ int x = 5;
 			
 			for(var b=2; array_lines[temp1][b]!==")"; b++){ //b=2 because first two elements are "if" and "("
 				if(isNaN(array_lines[temp1][b]) && isValid(array_lines[temp1][b])){
-					console.log(vstorage[array_lines[temp1][b]]);
-					eval(array_lines[temp1][b] +"="+(vstorage[array_lines[temp1][b]]).value.toString());
+					eval(array_lines[temp1][b] +"="+ vstorage[array_lines[temp1][b]].toString()); // vstorage[array_lines[temp1][b]].toString());
 				}
 				statement = statement + array_lines[temp1][b];
 			}
