@@ -8,9 +8,9 @@ function send(current){
         var primitives= {} ;
         var indicator="NA";
 
-    if(current[0].primitive!=""){
+    if(current[0].primitive()!=""){
 
-        primitives["type"] = current[0].primitives;
+        primitives["type"] = current[0].primitives();
         primitives["name"] = current[1];
         if(current[2]=="="){
             primitives["value"]=current[3];
