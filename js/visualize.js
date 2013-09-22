@@ -1,23 +1,101 @@
+var vstorage ={};
+var built_in =["int[]"];
+
+function send(current){
+
+        var objects ={};
+        var relations =[];
+        var primitives= {} ;
+        var indicator="NA";
+
+    if(current[0].primitive!=""){
+
+        primitives["type"] = current[0].primitives;
+        primitives["name"] = current[1];
+        if(current[2]=="="){
+            primitives["value"]=current[3];
+        } else{
+            if(primitives["type"]=="boolean"){
+                primitives["value"] = false;
+            } else{
+                primitives["value"] = 0;
+            }
+        }
+        vstorage[primitives["name"]]=primitives["value"];
+    }
+    else if(built_in.indexOf(current[0])!=-1 && current.indexOf("new")!=-1){
+        objects["type"] = current[0];
+        objects["name"] = current[1];
+
+        //built-in function
+        if(objects["type"]=="int[]"){
+            objects["capacity"] = current[current.indexOf("new")+3];
+        }  
+        //non built-in function
+    }
+    else if(current[0] in vstorage){
+        //primitives
+        if(!NaN(n=vstorage[current[0]]) || n==true || n==false){
+            if(vstorage[current[2]] in vstorage){
+                eval(vstorage[current[0]]=vstorage[current[2]]);
+            } else{
+                eval(vstorage[current[0]]=current[2]);
+            }
+        }
+        //objects
+        else{ 
+            relations.push(current[0]);
+            relations.push(current[2]);
+            // 1 --> 2
+        }
+    }
+
+
+    return {
+        "primitives": primitives,
+        "objects": objects,
+        "relations": relations
+    }
+}
 
 
 //vars = ["int", "x", "=", "0"]
+//vars = ["x",".name", "=", "y", "+", "1"]
+
+/*var vstorage = ...
 function magic(vars){
 
+    print()
+
     return {
-        "primitives": [{"name": "x", "value": "0"}],
+        "primitives": [{"name": "x", "value": "0", "type": "int"}],
         "objects": [],
         "relations": []
     }
 }
+*/
+function print(text){
+    $('#console').append("<br>"+text);
+}
+
+//var exists = [...]
 
 
 function findRefs(vars){
 
 }
 
+function arrow(s, t){
+    var link = {source: s, target: t, type: "link"};
+    graph.nodes.push(link);
+}
+
 function round(numstring, cutoff){
+    if (typeof numstring == "undefined"){
+        return;
+    }
 	cutoff = cutoff || 8;
-    console.log(cutoff)
+    console.log(numstring);
     var max = Math.pow(10, cutoff);
 	if (!isNaN(parseInt(numstring ,10))){						//int
         if (parseInt(numstring ,10) > max){
@@ -67,9 +145,9 @@ function start(){
   var color = d3.scale.category20();
 
   force = d3.layout.force()
-      .gravity(.05)
+      .gravity(.005)
       .distance(100)
-      .charge(-100)
+      .charge(-50)
       .linkDistance(30)
       .size([width, height])
       .nodes(graph.nodes)
@@ -115,8 +193,8 @@ function start(){
 
     node.append("rect")
         .attr("class", "node")
-        .attr("height", 50)
-        .attr("width", 50)
+        .attr("height", 20)
+        .attr("width", 20)
         .style("fill", function(d) { return color(d.group); })
         .attr("id", function(d){ return d.name })
         .on("click", function(d) {
@@ -164,13 +242,64 @@ var graph = {
     "links":[]
 }
 
+// http://blog.thomsonreuters.com/index.php/mobile-patent-suits-graphic-of-the-day/
+var links = [
+  {source: "Microsoft", target: "Amazon", type: "licensing"},
+  {source: "Microsoft", target: "HTC", type: "licensing"},
+  {source: "Samsung", target: "Apple", type: "suit"},
+  {source: "Motorola", target: "Apple", type: "suit"},
+  {source: "Nokia", target: "Apple", type: "resolved"},
+  {source: "HTC", target: "Apple", type: "suit"},
+  {source: "Kodak", target: "Apple", type: "suit"},
+  {source: "Microsoft", target: "Barnes & Noble", type: "suit"},
+  {source: "Microsoft", target: "Foxconn", type: "suit"},
+  {source: "Oracle", target: "Google", type: "suit"},
+  {source: "Apple", target: "HTC", type: "suit"},
+  {source: "Microsoft", target: "Inventec", type: "suit"},
+  {source: "Samsung", target: "Kodak", type: "resolved"},
+  {source: "LG", target: "Kodak", type: "resolved"},
+  {source: "RIM", target: "Kodak", type: "suit"},
+  {source: "Sony", target: "LG", type: "suit"},
+  {source: "Kodak", target: "LG", type: "resolved"},
+  {source: "Apple", target: "Nokia", type: "resolved"},
+  {source: "Qualcomm", target: "Nokia", type: "resolved"},
+  {source: "Apple", target: "Motorola", type: "suit"},
+  {source: "Microsoft", target: "Motorola", type: "suit"},
+  {source: "Motorola", target: "Microsoft", type: "suit"},
+  {source: "Huawei", target: "ZTE", type: "suit"},
+  {source: "Ericsson", target: "ZTE", type: "suit"},
+  {source: "Kodak", target: "Samsung", type: "resolved"},
+  {source: "Apple", target: "Samsung", type: "suit"},
+  {source: "Kodak", target: "RIM", type: "suit"},
+  {source: "Nokia", target: "Qualcomm", type: "suit"}
+];
+
+var nodes = {};
+
+// Compute the distinct nodes from the links.
+links.forEach(function(link) {
+  link.source = nodes[link.source] || (nodes[link.source] = {name: link.source});
+  link.target = nodes[link.target] || (nodes[link.target] = {name: link.target});
+});
+
+graph.nodes = nodes;
+graph.links = links;
+
+
+
 
 //takes an array of pieces
-function fillGraph(vars){
-    
+function fillGraph(data){
+//     var p = data["primitives"];
+//     var obj = data["objects"];
+//     var rel = data["relations"];
+// console.log(data)
+    var vars = data;
+
 
     var shtml = $('#shelfList').html();
     var node;
+
     var type = vars[0];
     var name = round(vars[1], 10);
     var value = round(vars[3], 10);
@@ -185,12 +314,12 @@ function fillGraph(vars){
     //add to shelf
     if (isPrimitive){
         shtml += "<li class='shelfItem'>"
-        + name
+        + "<div class='classLabel'>"+name+"</div>"
         + "<div class='box'>"+value+"</div>"
         + "</li>";
     } else {
         shtml += "<li class='shelfItem'>"
-        + name
+        + "<div class='classLabel'>"+name+"</div>"
         + "<div class='dot'>"+value+"</div>"
         + "</li>";
     }
