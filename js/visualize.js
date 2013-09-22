@@ -1,11 +1,64 @@
+var vstorage ={};
+function send(current){
+
+        var objects =[];
+        var relations =[];
+        var primitives= {} ;
+        var indicator="NA";
+
+    if(current[0].primitive!=""){
+
+        primitives["type"] = current[0].primitives;
+        primitives["name"] = current[1];
+        if(current[2]=="="){
+            primitives["value"]=current[3];
+        } else{
+            if(primitives["type"]=="boolean"){
+                primitives["value"] = false;
+            } else{
+                primitives["value"] = 0;
+            }
+        }
+        vstorage[primitives["name"]]=primitives["value"];
+    }
+    else if(classObject){
+
+    }
+    else if(current[0] in vstorage){
+        //primitives
+        if(!NaN(n=vstorage[current[0]]) || n==true || n==false){
+            if(vstorage[current[2]] in vstorage){
+                eval(vstorage[current[0]]=vstorage[current[2]]);
+            } else{
+                eval(vstorage[current[0]]=current[2]);
+            }
+        }
+        //objects
+        else{ 
+            relations.push(current[0]);
+            relations.push(current[2]);
+            // 1 --> 2
+        }
+    }
+
+
+    return {
+        "primitives": primitives,
+        "objects": objects,
+        "relations": relations
+    }
+}
 
 function findRefs(vars){
 
 }
 
 function round(numstring, cutoff){
+    if(typeof numstring =="undefined"){
+        return;
+    }
 	cutoff = cutoff || 8;
-    console.log(cutoff)
+    console.log(numstring);
     var max = Math.pow(10, cutoff);
 	if (!isNaN(parseInt(numstring ,10))){						//int
         if (parseInt(numstring ,10) > max){
@@ -55,9 +108,9 @@ function start(){
   var color = d3.scale.category20();
 
   force = d3.layout.force()
-      .gravity(.05)
+      .gravity(.005)
       .distance(100)
-      .charge(-100)
+      .charge(-50)
       .linkDistance(30)
       .size([width, height])
       .nodes(graph.nodes)
@@ -117,8 +170,8 @@ function start(){
         
 
     node.append("text")
-        .attr("dx", 12)
-        .attr("dy", ".35em")
+        .attr("dx", 25)
+        .attr("dy", "-1.0em")
         .text(function(d) { return d.name })
         
 
