@@ -30,23 +30,23 @@ function send(current){
 
         //built-in function
         if(objects["type"]=="int[]"){
-            alert(current);
+            // alert(current);
             c= current[current.length-1].substring(current[current.length-1].indexOf("[")+1,current[current.length-1].indexOf("]"));
             objects["capacity"] = c;
+            var values = [];
+            for(var i=0;i<c;i++){
+                values.push("0");
+            }
+            objects["content"] = values;
         }  
         vstorage[objects["name"]]=objects;
         //non built-in function
     }
-    else if(current[0] in vstorage){
+    else if(current[0] in vstorage || current[0].substring(0,current[0].indexOf("[")) in vstorage){
         //primitives
-        console.log("..");
-        n=vstorage[current[0]];
-        console.log(n);
+        n=vstorage[current[0]]; 
         if(!isNaN(n) || n==true || n==false){
-            console.log("testing");
-            console.log(vstorage[current[2]]);
             if(current[2] in vstorage){
-                console.log("?");
                 eval(vstorage[current[0]]=vstorage[current[2]]);
             } else{
                 console.log(vstorage[current[0]]+"="+current[2]);
@@ -55,9 +55,17 @@ function send(current){
         }
         //objects
         else{ 
-            relations.push(current[0]);
-            relations.push(current[2]);
-            // 1 --> 2
+            var bracketDist = current.indexOf("]") - current.indexOf("[");
+            var arr = current.join("").substring(0, current.indexOf("[")).trim();
+            if(bracketDist != 0 && bracketDist != 1){
+                console.log( current.join("").replace(new RegExp("/"+arr+"/g"), "vstorage["+arr+"].content") )
+                eval(current.join("").replace(new RegExp("/"+arr+"/g"), "vstorage["+arr+"].content"));
+            } else{
+                relations.push(current[0]);
+                relations.push(current[2]);
+                // 1 --> 2                
+            }
+
         }
     }
 
@@ -174,6 +182,7 @@ var link, node;
 var nodeCount = 0;
 
 function start(){
+    $('svg').empty();
   var width = window.innerWidth*.92,
       height = window.innerHeight;
 
