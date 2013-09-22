@@ -27,6 +27,31 @@ body{
 	height: 35px;
 }
 
+#console{
+	position:fixed;
+	right:0;
+	width:25%;
+	height:60%;
+	top:15%;
+	text-align: right;
+	padding-right:10px;
+	border-top: 1px solid lightgrey;
+	color:dimGray;
+	z-index:-1;
+}
+#rightMenu{
+	position:fixed;
+	right:0;
+	top:15%;
+}
+#nextLine, #resetBtn{
+	border-radius: 0px;
+	display: block;
+	height:30px;
+	width:95px;
+	margin-bottom:2px;
+}
+
 .menuBtn{
 	height:20px;
 }
@@ -83,11 +108,12 @@ body{
 	white-space:nowrap;
 	height:100%;
 	overflow-x: hidden;
+	overflow-y: hidden;
 }
 .shelfItem{
 	display:inline-block;
 	list-style-type: none;
-	padding-right:10%;
+	padding-right:5%;
 	padding-left:20px;
 	padding-bottom: 10%;
 	border-right: 1px solid gray;
@@ -95,16 +121,30 @@ body{
 	position:relative;
 	//background-color:gray;
 }
+.classLabel{
+	text-align:center;
+	padding: 15px 0px;
+}
 .dot{
 	position: relative;
 	width: 60px; height: 60px; 
 	background-color: rgb(148, 188, 58); 
+	font-size: 22px;
+	padding-top: 13px;
 	border-radius: 30px; 
+	color:black;
+	font-weight:bold;
+	text-align: center;
 }
 .box{
 	position: relative;
 	width: 60px; height: 60px; 
 	background-color: rgb(148, 188, 58); 
+	font-size: 22px;
+	padding-top: 13px;
+	color:black;
+	font-weight:bold;
+	text-align: center;
 }
 .shelfLeft{
 	position:fixed;
@@ -193,6 +233,11 @@ dt{
 	transition: transform .5s;
 }
 .selected{
+	stroke: lightpink;
+	stroke-width: 3px;
+	//background: -webkit-radial-gradient(circle 16px at 20px 50%, black 0%, black 14px, rgba(0,0,0,0.3) 18px, rgba(0,0,0,0) 19px);
+}
+.selectedClass{
 	stroke: lightpink;
 	stroke-width: 200px;
 	//background: -webkit-radial-gradient(circle 16px at 20px 50%, black 0%, black 14px, rgba(0,0,0,0.3) 18px, rgba(0,0,0,0) 19px);

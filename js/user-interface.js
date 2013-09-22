@@ -21,11 +21,11 @@ $(document).keyup(function(e){
 		$("textarea").slideToggle(200);
 	}
 	if(e.keyCode==82 && $("textarea").css('display')==="none"){
-		go();
+		reset();
+		go(0);
+		playNote();
 	}
 })
-
-
 
 
 //open close the paste area
@@ -73,6 +73,7 @@ $(document).on('keyup', function(e){
 			}
 			cover = !cover;
 		});
+		playNote();
 	}
 });
 $('#settings, .cover').on('click', function(){
@@ -86,6 +87,7 @@ $('#settings, .cover').on('click', function(){
 			}
 			cover = !cover;
 		});
+		playNote();
 	}
 })
 
@@ -105,7 +107,25 @@ $('.set').click(function(){
 
 	$('#setList').slideUp();
 	$('.cover').fadeOut();
-})
+
+	playNote();
+});
+
+var context = new webkitAudioContext();
+function playNote(){
+	
+	var	oscillator = context.createOscillator(); // Oscillator defaults to sine wave
+
+	oscillator.connect(context.destination);
+	oscillator.frequency.value = 1100;
+	oscillator.start(0);
+	requestAnimationFrame(function(){
+		setTimeout(function(){
+			console.log(oscillator.playbackState)
+			oscillator.stop(0);
+		}, 100);
+	});
+}
 
 
 

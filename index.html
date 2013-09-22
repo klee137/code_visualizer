@@ -28,7 +28,7 @@
 	<li class="set">
 		Stats
 	</li>
-	<li class="set" onClick='go()'>
+	<li class="set" onClick='go(0)'>
 		Run
 	</li>
 </ul>
@@ -91,6 +91,13 @@ int x = 5;
 </div>
 
 <div id="magicBtn">M</div>
+<div id="console" class='lead'>
+	<!--console &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-->
+</div>
+<div id="rightMenu">
+	<div id="nextLine" class='btn btn-success'>Next Line</div>
+	<div id="resetBtn" onClick='reset()' class='btn btn-warning'>Reset</div>
+</div>
 
 
 <div class="modal fade" id="detail">
@@ -220,56 +227,75 @@ int x = 5;
 		this.content_lines =[];
 	}
 
-	var ostorage, lines, storage, testClass, testArray;
-	function go(){
+
+
+
+	var lineI = 0;
+	//next Line clicking
+	$('#nextLine').click(function(){
+		if (lineI < lines.length){
+			go(lineI);
+	    	lineI+=1;
+		}
+	});
+
+	//reset initial conditions
+	function reset(){
 		//empty graph
 	    graph = {
 	        "nodes": [],
 	        "links": [],
 	    }
+	    
 	    $('svg').empty();
 	    $('#shelfList').html("");
+
+	    lineI = 0;
+	}
+	reset();
+
+
+	var lines =$('textarea').val().trim().split('\n');
+	var ostorage, storage, testClass, testArray;
+	function go(i){
 
 		//SUPER VARIABLES
 		ostorage ={
 			'objValue' : {}
 		}
-		lines =$('textarea').val().trim().split('\n');
+		
 		storage=[];
 
 
 		// BEGINNING OF THE PROGRAM
-
-		for(var i=0;i<lines.length;i++){
-			var temp = lines[i].trim();
-			if(temp.length<1){
-				continue;
-			} 
+		//analyze the ith line in textarea, increment on clicking next line btn
+		var temp = lines[i].trim();
+		if(temp.length >= 1){
 			var x = parser(temp)
 			storage.push(parser(temp));
 
 			visualize(x, findRefs(x));
-		}
 
-		testClass = classOrganizer(storage);
+			testClass = classOrganizer(storage);
 
-		for(var i=0;i<testClass.mstorage.length;i++){
-			testClass.mstorage[i].content_lines = if_block(testClass.mstorage[i].content_lines,testClass.mstorage[i].vstorage);
-		}
+			for(var i=0;i<testClass.mstorage.length;i++){
+				testClass.mstorage[i].content_lines = if_block(testClass.mstorage[i].content_lines,testClass.mstorage[i].vstorage);
+			}
 
 
-		//testing area
+			//testing area
 
-		console.log("name");
-		console.log(testClass.name);
-		console.log("import storage");
-		console.log(testClass.impStore);
-		console.log("method storage");
-		console.log(testClass.mstorage[0].visibility_type +" "+testClass.mstorage[0].is_static +" "+testClass.mstorage[0].return_type+" "+testClass.mstorage[0].method_name);
-		testArray = testClass.mstorage[0].content_lines;
-		for(var i=0;i<testArray.length;i++){
-			console.log(testArray[i]);
-		}
+			console.log("name");
+			console.log(testClass.name);
+			console.log("import storage");
+			console.log(testClass.impStore);
+			console.log("method storage");
+			console.log(testClass.mstorage[0].visibility_type +" "+testClass.mstorage[0].is_static +" "+testClass.mstorage[0].return_type+" "+testClass.mstorage[0].method_name);
+			testArray = testClass.mstorage[0].content_lines;
+			for(var i=0;i<testArray.length;i++){
+				console.log(testArray[i]);
+			}
+		} 
 	}
 
 
