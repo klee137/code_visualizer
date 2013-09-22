@@ -133,21 +133,22 @@ body{
 }
 .dot{
 	position: relative;
-	width: 80px; height: 80px; 
-	background-color: rgb(255, 102, 0); 
+	width: 110px; height: 110px; 
+	background: -webkit-linear-gradient(top, rgb(0, 199, 40),#000000 200%);
 	font-size: 22px;
 	padding-top: 13px;
-	border-radius: 50px; 
+	border-radius:70px; 
 	color:black;
 	font-weight:bold;
 	text-align: center;
 }
 .box{
 	position: relative;
-	width: 60px; height: 60px; 
-	background-color: rgb(148, 188, 58); 
+	top:15px;
+	width: 80px; height: 80px; 
+	background: -webkit-linear-gradient(top, rgb(255, 184, 0),#000000 200%);
 	font-size: 22px;
-	padding-top: 13px;
+	padding-top: 24px;
 	color:black;
 	font-weight:bold;
 	text-align: center;
@@ -195,7 +196,7 @@ dt{
 	left:10%;
 	width: 200px;
 	height: 200px;
-	background-color: rgb(89, 16, 77);
+	background-color: rgb(2, 175, 106);
 	text-align: center;
 	color: white; text-shadow: black 0.1em 0.1em 0.2em;
 	border-radius: 150px;

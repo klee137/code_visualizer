@@ -459,7 +459,6 @@ var graph = {
     "links":[]
 }
 
-// http://blog.thomsonreuters.com/index.php/mobile-patent-suits-graphic-of-the-day/
 var links = [
   
 ];
