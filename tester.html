@@ -1,0 +1,163 @@
+<html>
+<head>
+    <script src="js/jquery-latest.js"></script>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="js/underscore-min.js"></script>
+    <style type="text/css">
+        .link { stroke: #ccc; }
+        .nodetext { pointer-events: none; font: 10px sans-serif; }
+        body { width:100%; height:100%; margin:none; padding:none; }
+        #view { width:500px;height:500px; border:3px solid black;border-radius:12px; margin:auto; background-color: white }
+        .overlay {
+  fill: none;
+  pointer-events: all;
+}
+    </style>
+</head>
+<body>
+<div id="view"></div>
+</body>
+<script type="text/javascript">
+
+function myGraph(el) {
+
+    // Initialise the graph object
+    var graph = this.graph = {
+        "nodes":[],
+        "links":[]
+    };
+
+    // Add and remove elements on the graph object
+    this.addNode = function (name) {
+        graph["nodes"].push({"name":name});
+        update();
+    }
+
+    this.removeNode = function (name) {
+        graph["nodes"] = _.filter(graph["nodes"], function(node) {return (node["name"] != name)});
+        graph["links"] = _.filter(graph["links"], function(link) {return ((link["source"]["name"] != name)&&(link["target"]["name"] != name))});
+        update();
+    }
+
+    var findNode = function (name) {
+        for (var i in graph["nodes"]) if (graph["nodes"][i]["name"] === name) return graph["nodes"][i];
+    }
+
+    this.addLink = function (source, target) {
+        graph["links"].push({"source":findNode(source),"target":findNode(target)});
+        update();
+    }
+
+    // set up the D3 visualisation in the specified element
+    var w = $(el).innerWidth(),
+        h = $(el).innerHeight();
+
+    var vis = d3.select(el).append("svg:svg")
+        .attr("width", w)
+        .attr("height", h)
+        .call(d3.behavior.drag().on("drag", drag));
+
+     vis.append("rect")
+        .attr("class", "overlay")
+        .attr("width", w)
+        .attr("height", h);
+
+    function drag() {
+        var d = d3.event;
+        var curr = $('.mainG').attr("transform") || "translate(0,0)scale(1)";
+        //curr = curr.replace("translate", "").replace("(", "").replace(")", "");
+        curr = curr.replace("translate(","").replace(")","").replace(")","").split("scale(");
+        var newX = parseFloat(curr[0].split(",")[0], 10) + parseFloat(d.dx, 10);
+        var newY = parseFloat(curr[0].split(",")[1], 10) + parseFloat(d.dy, 10);
+        var currScale = parseFloat(curr[1], 10);
+      console.log(curr)
+        $('.mainG').attr("transform", "translate(" + newX + "," + newY + ")" + "scale("+ currScale +")");
+    }
+
+    // Per-type markers, as they don't inherit styles.
+vis.append("svg:defs").selectAll("marker")
+    .data(["suit", "licensing", "resolved"])
+  .enter().append("svg:marker")
+    .attr("id", String)
+    .attr("viewBox", "0 -5 10 10")
+    .attr("refX", 15)
+    .attr("refY", -1.5)
+    .attr("markerWidth", 6)
+    .attr("markerHeight", 6)
+    .attr("orient", "auto")
+  .append("svg:path")
+    .attr("d", "M0,-5L10,0L0,5");
+
+    var force = d3.layout.force()
+        .nodes(graph.nodes)
+        .links(graph.links)
+        .gravity(.05)
+        .distance(100)
+        .charge(-100)
+        .size([w, h]);
+
+    var update = function () {
+
+        var link = vis.selectAll("line.link")
+            .data(graph.links);
+
+        link.enter().insert("line")
+            .attr("class", "link")
+            .attr("x1", function(d) { return d.source.x; })
+            .attr("y1", function(d) { return d.source.y; })
+            .attr("x2", function(d) { return d.target.x; })
+            .attr("y2", function(d) { return d.target.y; });
+
+        link.exit().remove();
+
+        var node = vis.selectAll("g.node")
+            .data(graph.nodes);
+
+        node.enter().append("g")
+            .attr("class", "node")
+            .call(force.drag);
+
+        node.append("image")
+            .attr("class", "circle")
+            .attr("x", "-8px")
+            .attr("y", "-8px")
+            .attr("width", "16px")
+            .attr("height", "16px");
+
+        node.append("text")
+            .attr("class", "nodetext")
+            .attr("dx", 12)
+            .attr("dy", ".35em")
+            .text(function(d) { return d.name });
+
+        node.exit().remove();
+
+        force.on("tick", function() {
+          link.attr("x1", function(d) { return d.source.x; })
+              .attr("y1", function(d) { return d.source.y; })
+              .attr("x2", function(d) { return d.target.x; })
+              .attr("y2", function(d) { return d.target.y; });
+
+          node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+        });
+
+        // Restart the force layout.
+        force
+          .nodes(graph.nodes)
+          .links(graph.links)
+          .start();
+    }
+
+    // Make it all go
+    update();
+}
+
+graph = new myGraph("#view");
+
+// These are the sort of commands I want to be able to give the object.
+graph.addNode("A");
+graph.addNode("B");
+graph.addLink("A", "B");
+
+</script>
+</html>
