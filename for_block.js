@@ -2,6 +2,8 @@ function for_block(array_lines, vstorage){
 	var start_index = [];
 	var end_index = [];
 	var temp = 0;
+	var var_temp1 = 0;
+	var var_temp2 = 0;
 	var bool = 0;
 	var rep_counter = 0;
 	var return_lines = [];
@@ -45,6 +47,8 @@ function for_block(array_lines, vstorage){
 			if(isNaN(array_lines[temp][b]) && isValid(array_lines[temp][b])){
 				eval(array_lines[temp][b] +"="+ "2"); // vstorage[array_lines[temp1][b]].toString());
 				temp_cond = 1;
+				var_temp1 = temp;
+				var_temp2 = b;
 			}
 		}
 		
@@ -60,6 +64,14 @@ function for_block(array_lines, vstorage){
 
 		for(b; array_lines[temp][b+1]!=="{"; b++){
 			increment = increment + array_lines[temp][b];
+		}
+
+		if(isValid(array_lines[var_temp1][var_temp2-1])){
+			array_lines.splice(var_temp1+1, 0, [array_lines[var_temp1][var_temp2-1], array_lines[var_temp1][var_temp2], "=", vstorage[array_lines[var_temp1][var_temp2].toString
+				]]);
+		}else{
+			array_lines.splice(var_temp1+1, 0, [array_lines[var_temp1][var_temp2], "=", vstorage[array_lines[var_temp1][var_temp2].toString
+				]]);
 		}
 
 		while(eval(condition)){
