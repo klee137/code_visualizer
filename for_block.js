@@ -1,4 +1,5 @@
 function for_block(array_lines, vstorage){
+	var code_array = array_lines;
 	var start_index = [];
 	var end_index = [];
 	var temp = 0;
@@ -8,9 +9,9 @@ function for_block(array_lines, vstorage){
 	var rep_counter = 0;
 	var return_lines = [];
 
-	for(var a=0; a<array_lines.length; a++){
-		for(var b=0; b<array_lines[a].length; b++){
-			if(array_lines[a][b]==="for"){
+	for(var a=0; a<code_array.length; a++){
+		for(var b=0; b<code_array[a].length; b++){
+			if(code_array[a][b]==="for"){
 				start_index.push(a);
 			}
 		}
@@ -19,10 +20,10 @@ function for_block(array_lines, vstorage){
 		temp=1;
 		bool=1;
 		for(var b=start_index[a]+1; bool; b++){
-			for(var c=0; c<array_lines[b].length; c++){
-				if(array_lines[b][c]==="{"){
+			for(var c=0; c<code_array[b].length; c++){
+				if(code_array[b][c]==="{"){
 					temp++;
-				}else if(array_lines[b][c]==="}"){
+				}else if(code_array[b][c]==="}"){
 					temp--;
 				}
 				if(temp==0){
@@ -33,66 +34,100 @@ function for_block(array_lines, vstorage){
 		}
 	}
 
-	var condition;
-	var increment = "";
+	var condition = [];
+	var increment = [];
 	var temp_cond = 0;
+	var prim = 0;
+	var v_string = "";
+	vstorage[v_string] = 0;
+	var values = [];
+	bool = 0;
 
 	for(var a=0; a<start_index.length; a++){
 		temp = start_index[a];
 		var b;
 		for(b=2; !temp_cond; b++){
-			if(array_lines[temp][b]==="int" || array_lines[temp][b]==="double" || array_lines[temp][b]==="String" || array_lines[temp][b]==="char" || array_lines[temp][b]==="Int" || array_lines[temp][b]==="boolean"){
+			if(code_array[temp][b].primitive()!="" && !bool){
 				b++;
+				v_string = code_array[temp][b];
+				vstorage[v_string]=parseInt(code_array[temp][b+2]);
+
 			}
-			if(isNaN(array_lines[temp][b]) && isValid(array_lines[temp][b])){
-				eval(array_lines[temp][b] +"="+ "2"); // vstorage[array_lines[temp1][b]].toString());
+			if(isNaN(code_array[temp][b]) && isValid(code_array[temp][b])){
+				// if((y=array_lines[temp][b]) in vstorage){
+				// 	console.log("reached here" + y);
+				// 	console.log(vstorage[y]+"="+ vstorage[array_lines[temp][b]].toString());
+				// 	eval(vstorage[y]+"="+ vstorage[array_lines[temp][b]].toString());	
+				// } 
+				
 				temp_cond = 1;
 				var_temp1 = temp;
 				var_temp2 = b;
 			}
 		}
 		
-		while(array_lines[temp][b]!=";"){
+		while(code_array[temp][b]!=";"){
 			b++;
 		}
 		b++;
-		condition = "";
-		for(b; array_lines[temp][b]!==";"; b++){
-			condition = condition + array_lines[temp][b];
+		condition.push("");
+		for(b; code_array[temp][b]!==";"; b++){
+			condition[a] = condition[a] + code_array[temp][b];
 		}
 		b++;
-
-		for(b; array_lines[temp][b+1]!=="{"; b++){
-			increment = increment + array_lines[temp][b];
+		increment.push("");
+		for(b; code_array[temp][b+1]!=="{"; b++){
+			increment[a] = increment[a] + code_array[temp][b];
 		}
 
-		if(isValid(array_lines[var_temp1][var_temp2-1])){
-			array_lines.splice(var_temp1+1, 0, [array_lines[var_temp1][var_temp2-1], array_lines[var_temp1][var_temp2], "=", vstorage[array_lines[var_temp1][var_temp2].toString
-				]]);
-		}else{
-			array_lines.splice(var_temp1+1, 0, [array_lines[var_temp1][var_temp2], "=", vstorage[array_lines[var_temp1][var_temp2].toString
-				]]);
-		}
+		// if(isValid(code_array[var_temp1][var_temp2-1])){
+		// 	code_array.splice(var_temp1+1, 0, [code_array[var_temp1][var_temp2-1], v_string, "=", vstorage[v_string].toString()]);
+		// }else{
+		// 	code_array.splice(var_temp1+1, 0, [v_string, "=", vstorage[v_string].toString()]
+		// 		);
+		// }
 
-		while(eval(condition)){
+		// for(var d=0; d<end_index.length; d++){
+		// 	if(start_index[d]>=var_temp1){
+		// 		start_index[d]++;
+		// 	}
+		// 	if(end_index[d]>=var_temp1){
+		// 		end_index[d]++;
+		// 	}
+		// }
+		console.log(condition[a]);
+		condition[a] = "vstorage[v_string]"+condition[a].substring(1,condition[a].length);
+		values[a] = new Array(0);
+		while(eval(condition[a])){
 			rep_counter++;
-			eval(increment);
+			values[a].push(vstorage[v_string]);
+			increment[a] = "vstorage[v_string]"+"=vstorage[v_string]+1";//increment.substring(1,increment.length);
+			eval(increment[a]);
 		}
 	}
-
-	for(var a=0; a<array_lines.length; a++){
+	
+	for(var a=0; a<code_array.length; a++){
+		var temp_temp = 0;
 		if(a==start_index[0]){
 			temp = a+1;
 			for(rep_counter; rep_counter>0; rep_counter--){
+				var temp_counter = 0;
 				for(var b=temp; b<end_index[0]; b++){
-					return_lines.push(array_lines[b]);
+					return_lines.push(["int", v_string, "=", temp_temp.toString()]);
+					temp_temp++;
+					return_lines.push(code_array[b]);
+					temp_counter++;
 				}
 			}
+
+			temp_temp = temp_temp + 1;
 			a=end_index[0]+1;
 			start_index.slice(0,1);
 			end_index.slice(0,1);
 		}
-		return_lines.push(array_lines[a]);
+		return_lines.push(code_array[a]);
 	}
+	console.log(values);
+	console.log(return_lines);
 	return return_lines;
 }
