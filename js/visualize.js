@@ -206,6 +206,19 @@ function start(){
         .attr('class', 'mainG')
         .call(d3.behavior.drag().on("drag", drag));
 
+    // svg.append("svg:defs").selectAll("marker")
+    //     .data(["suit", "licensing", "resolved"])
+    //   .enter().append("svg:marker")
+    //     .attr("id", String)
+    //     .attr("viewBox", "0 -5 10 10")
+    //     .attr("refX", 15)
+    //     .attr("refY", -1.5)
+    //     .attr("markerWidth", 6)
+    //     .attr("markerHeight", 6)
+    //     .attr("orient", "auto")
+    //   .append("svg:path")
+    //     .attr("d", "M0,-5L10,0L0,5");
+
 
 
     svg.append("rect")
