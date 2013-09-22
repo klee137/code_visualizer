@@ -5,7 +5,32 @@
 <script src="http://code.jquery.com/jquery-latest.js"></script>
 
 <textarea>
-int x = 5;
+
+import java.util.*;
+
+
+public class Tree {
+	int i=0;
+	int j=7;
+	int count;
+
+	public static void main(String[] args) {
+		TreeNode t = new TreeNode("myTree");
+		j=5;
+	
+	}
+	public void add(){
+		j=5;
+
+	}
+	private class TreeNode{
+		int value;
+		char name;
+	}
+
+}
+
+
 </textarea>
 
 
@@ -88,6 +113,7 @@ function classStorage(){
 function method(){
 	this.visibility_type = "default";
 	this.is_static = false;
+	this.is_constructor = false;
 	this.return_type;
 	this.method_name;
 	this.vstorage = {};
@@ -238,9 +264,13 @@ function classOrganizer(entireArray){
 			for(i=i+1;i<entireArray.length;i++){
 				var temp1 = entireArray[i];
 				if((temp1.indexOf("(")!=-1 && temp1.indexOf(")")!=-1) && temp1.indexOf("{")!=-1){ //method case
-					classObject.mstorage.push(methodmaker(entireArray,i));
+					classObject = methodmaker(entireArray,i,classObject);
 					i=endbracket(entireArray,i+1);
 				} 
+				else if(temp1[0]===classObject.visibility && temp1[1] ===classObject.name){ //constructor case
+					classObject = methodmaker(entireArray,i,classObject);
+					i=endbracket(entireArray,i+1);
+				}
 				else if((s=temp1[0].primitive())!==""){
 					var vinstance = new variable();
 
@@ -303,7 +333,7 @@ function classOrganizer(entireArray){
 
 }
 
-function methodmaker(entireArray,i){
+function methodmaker(entireArray,i, classObject){
 		var myMethod = new method();
 		var storage2 = [];
 
@@ -312,19 +342,38 @@ function methodmaker(entireArray,i){
 		//store visibility
 		myMethod.visibility_type= entireArray[i].visibility();
 		//check static
-		myMethod.is_static=entireArray[i].indexOf("static")!=-1;
-		myMethod.return_type = entireArray[i][entireArray[i].indexOf("(")-2];
-		myMethod.method_name = entireArray[i][entireArray[i].indexOf("(")-1];
-		var tracker=1;
-		//store arguments
-		while(true){
-			myMethod.args.push(entireArray[i][entireArray[i].indexOf("(")+tracker]);
-			myMethod.args.push(entireArray[i][entireArray[i].indexOf("(")+tracker+1]);
 
-			if(entireArray[i][entireArray[i].indexOf("(")+tracker+2]!=","){
-				break;
+		if(entireArray[i].indexOf(classObject.name)==-1){ //non constructor case
+			myMethod.is_static=entireArray[i].indexOf("static")!=-1;
+			myMethod.return_type = entireArray[i][entireArray[i].indexOf("(")-2];
+			myMethod.method_name = entireArray[i][entireArray[i].indexOf("(")-1];
+			var tracker=1;
+			//store arguments
+			while(true){
+				myMethod.args.push(entireArray[i][entireArray[i].indexOf("(")+tracker]);
+				myMethod.args.push(entireArray[i][entireArray[i].indexOf("(")+tracker+1]);
+
+				if(entireArray[i][entireArray[i].indexOf("(")+tracker+2]!=","){
+					break;
+				}
+				tracker=tracker+3;
 			}
-			tracker=tracker+3;
+		} else{ //constructor case
+			myMethod.is_static =false;
+			myMethod.return_type = "";
+			myMethod.method_name = classObject.name;
+
+			var tracker=1;
+			//store arguments
+			while(true){
+				myMethod.args.push(entireArray[i][entireArray[i].indexOf("(")+tracker]);
+				myMethod.args.push(entireArray[i][entireArray[i].indexOf("(")+tracker+1]);
+
+				if(entireArray[i][entireArray[i].indexOf("(")+tracker+2]!=","){
+					break;
+				}
+				tracker=tracker+3;
+			}
 		}
 		//go through the content && tells when it ends
 		for(i=i+1;i<entireArray.length;i++){
@@ -342,14 +391,21 @@ function methodmaker(entireArray,i){
 				vinstance.visibility_type=temp2.visibility();
 				myMethod.vstorage[temp2[1]]=vinstance; 
 			}
-			if(temp2[0] in myMethod.vstorage){
+			
+			else if(temp2[0] in myMethod.vstorage){
 				if(!isNaN(temp2[2])){
 					myMethod.vstorage[temp2[0]].value=temp2[2];
 				}
 			}
+			else if(temp2[0] in classObject.vstorage){
+				if(!isNaN(temp2[2])){
+					classObject.vstorage[temp2[0]].value=temp2[2];
+				}
+			}
 			if(i==index){
 				myMethod.content_lines=storage2;
-				return myMethod;
+				classObject.mstorage.push(myMethod);
+				return classObject;
 			}
 			storage2.push(temp2);
 		}	
