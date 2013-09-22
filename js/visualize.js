@@ -1,9 +1,13 @@
 var vstorage ={};
 var built_in =["int[]"];
 
+String.prototype.endsWith = function(suffix) {
+    return this.indexOf(suffix, this.length - suffix.length) !== -1;
+};
+
 function send(current){
 
-    var objects ={};
+    var objects =[];
     var relations =[];
     var primitives= {} ;
     var indicator="NA";
@@ -24,23 +28,34 @@ function send(current){
         vstorage[primitives["name"]]=primitives["value"];
     }
     else if(built_in.indexOf(current[0])!=-1 && current.indexOf("new")!=-1){
-        
-        objects["type"] = current[0];
-        objects["name"] = current[1];
+        var obj = {};
+        obj["type"] = current[0];
+        obj["name"] = current[1];
 
         //built-in function
-        if(objects["type"]=="int[]"){
+        if(obj["type"].endsWith("[]")){
             // alert(current);
             c= current[current.length-1].substring(current[current.length-1].indexOf("[")+1,current[current.length-1].indexOf("]"));
-            objects["capacity"] = c;
+            obj["capacity"] = c;
             var values = [];
             for(var i=0;i<c;i++){
                 values.push("0");
             }
-            objects["content"] = values;
+            obj["content"] = values;
         }  
-        vstorage[objects["name"]]=objects;
+        vstorage[obj["name"]]=obj;
         //non built-in function
+
+
+        var objData = {
+            "name" : current[0],
+            "type" : "pointer"
+        };
+
+        objects.push(obj);
+        objects.push(objData);
+
+        relations = [obj, objData];
     }
     else if(current[0] in vstorage || current[0].substring(0,current[0].indexOf("[")) in vstorage){
         //primitives
@@ -107,35 +122,9 @@ function print(text){
 
 
 function arrow(s, t){
-    var newlink = {source: {"name":s}, target: {"name":t}, type: "suit"};
-    graph.links.push(newlink);
-    links.push(newlink);
-
-
-
-    var link = d3.select('svg').selectAll("path.link")
-        .data(graph.links);
-
-    link.enter().insert("path")
-        .attr("class", "link")
-        .attr("x1", function(d) { return d.source.x; })
-        .attr("y1", function(d) { return d.source.y; })
-        .attr("x2", function(d) { return d.target.x; })
-        .attr("y2", function(d) { return d.target.y; });
-
-    link.exit().remove();
-    var node = d3.select('svg').selectAll("g.node")
-            .data(graph.nodes);
-
-        node.enter().append("g")
-            .attr("class", "node")
-            .call(force.drag);
-
-    node.exit().remove();
-    force
-          .nodes(graph.nodes)
-          .links(graph.links)
-          .start();
+    // var newlink = {source: {"name":s}, target: {"name":t}, type: "suit"};
+    console.log("link: " + s + " " + t)
+    graph.addLink(s, t)
 
 }
 
@@ -182,12 +171,17 @@ function visualize(vars, references) {
     if (!$.isEmptyObject(p)){
         fillGraph(p);
     }
-    if (!$.isEmptyObject(obj)){
-        fillGraph(obj);
+    for (var i=0; i<obj.length; i++){
+        if (obj.hasOwnProperty(i)){
+            fillGraph(obj[i]);
+        }
     }
-    if (rel.length > 0){
-        arrow(rel[0], rel[1]);
-    }
+    setTimeout(function(){
+        if (rel.length > 0){
+            arrow(rel[0]["name"], rel[1]["name"]);
+        }
+    }, 1100);
+    
 
     //update the shelf
     var items = $('.shelfItem', '#shelfList');
@@ -201,245 +195,8 @@ function visualize(vars, references) {
         }
     }
 
-    start(nodes, links);
+    //start();
 }
-
-
-var force;
-var link, node;
-var nodeCount = 0;
-
-function start(ns, ls){
-    $('svg').empty();
-    var w = 960,
-        h = 500;
-
-var color = d3.scale.category20();
-
-force = d3.layout.force()
-    .nodes(d3.values(nodes))
-    .links(links)
-    .size([w, h])
-    .linkDistance(60)
-    .charge(-300)
-    .on("tick", tick)
-    .start();
-
-var svg = d3.select('svg')
-        .attr("width", w)
-        .attr("height", h)
-        .append("g")
-        .attr('class', 'mainG')
-        .call(d3.behavior.drag().on("drag", drag));
-
-     svg.append("rect")
-        .attr("class", "overlay")
-        .attr("width", w)
-        .attr("height", h);
-
-    function drag() {
-        var d = d3.event;
-        var curr = $('.mainG').attr("transform") || "translate(0,0)scale(1)";
-        //curr = curr.replace("translate", "").replace("(", "").replace(")", "");
-        curr = curr.replace("translate(","").replace(")","").replace(")","").split("scale(");
-        var newX = parseFloat(curr[0].split(",")[0], 10) + parseFloat(d.dx, 10);
-        var newY = parseFloat(curr[0].split(",")[1], 10) + parseFloat(d.dy, 10);
-        var currScale = parseFloat(curr[1], 10);
-      console.log(curr)
-        $('.mainG').attr("transform", "translate(" + newX + "," + newY + ")" + "scale("+ currScale +")");
-    }
-
-// Per-type markers, as they don't inherit styles.
-svg.append("svg:defs").selectAll("marker")
-    .data(["suit", "licensing", "resolved"])
-  .enter().append("svg:marker")
-    .attr("id", String)
-    .attr("viewBox", "0 -5 10 10")
-    .attr("refX", 15)
-    .attr("refY", -1.5)
-    .attr("markerWidth", 6)
-    .attr("markerHeight", 6)
-    .attr("orient", "auto")
-  .append("svg:path")
-    .attr("d", "M0,-5L10,0L0,5");
-
-var path = svg.append("svg:g").selectAll("path")
-    .data(force.links())
-  .enter().append("svg:path")
-    .attr("class", function(d) { return "link " + d.type; })
-    .attr("marker-end", function(d) { return "url(#" + d.type + ")"; });
-
-var circle = svg.append("svg:g").selectAll(".node")
-    .data(force.nodes())
-  .enter().append("g")
-  .append("svg:circle")
-    .attr("r", 6)
-    .style("fill", function(d) { return color(d.group); })
-        .attr("id", function(d){ return d.name })
-        .on("click", function(d) {
-            //clicking on a node changes it's style
-            var self = $(this);
-            $('.node').attr("class", "node");
-            self.attr("class", "node selected");
-            clickNode(d);
-        });
-    //.call(force.drag);
-
-var text = svg.append("svg:g").selectAll("g")
-    .data(force.nodes())
-  .enter().append("svg:g");
-
-// A copy of the text with a thick white stroke for legibility.
-text.append("svg:text")
-    .attr("x", 8)
-    .attr("y", ".31em")
-    .attr("class", "shadow")
-    .text(function(d) { return d.name; });
-
-text.append("svg:text")
-    .attr("x", 8)
-    .attr("y", ".31em")
-    .text(function(d) { return d.name; });
-
-    // Use elliptical arc path segments to doubly-encode directionality.
-    function tick() {
-      path.attr("d", function(d) {
-        if (typeof d != "undefined" && typeof d != "NaN"){
-            var dx = d.target.x - d.source.x,
-            dy = d.target.y - d.source.y,
-            dr = Math.sqrt(dx * dx + dy * dy);
-            return "M" + d.source.x + "," + d.source.y + "A" + dr + "," + dr + " 0 0,1 " + d.target.x + "," + d.target.y;
-        }
-        return;
-      });
-
-      circle.attr("transform", function(d) {
-        return "translate(" + d.x + "," + d.y + ")";
-      });
-
-      text.attr("transform", function(d) {
-        return "translate(" + d.x + "," + d.y + ")";
-      });
-    }
-
-   
-}
-
-/*
-function start(ns, ls){
-    $('svg').empty();
-  var w = window.innerWidth*.92,
-      h = window.innerHeight;
-
-var color = d3.scale.category20();
-
-var force = d3.layout.force()
-    .nodes(ns)
-    .links(ls)
-    .size([w, h])
-    .linkDistance(60)
-    .charge(-300)
-    .on("tick", tick)
-    .start();
-
-var svg = d3.select('svg')
-        .attr("width", w)
-        .attr("height", h)
-        .append("g")
-        .attr('class', 'mainG')
-        .call(d3.behavior.drag().on("drag", drag));
-
-     svg.append("rect")
-        .attr("class", "overlay")
-        .attr("width", w)
-        .attr("height", h);
-
-    function drag() {
-        var d = d3.event;
-        var curr = $('.mainG').attr("transform") || "translate(0,0)scale(1)";
-        //curr = curr.replace("translate", "").replace("(", "").replace(")", "");
-        curr = curr.replace("translate(","").replace(")","").replace(")","").split("scale(");
-        var newX = parseFloat(curr[0].split(",")[0], 10) + parseFloat(d.dx, 10);
-        var newY = parseFloat(curr[0].split(",")[1], 10) + parseFloat(d.dy, 10);
-        var currScale = parseFloat(curr[1], 10);
-      
-        $('.mainG').attr("transform", "translate(" + newX + "," + newY + ")" + "scale("+ currScale +")");
-    }
-
-// Per-type markers, as they don't inherit styles.
-svg.append("svg:defs").selectAll("marker")
-    .data(["link", "licensing", "resolved"])
-  .enter().append("svg:marker")
-    .attr("id", String)
-    .attr("viewBox", "0 -5 10 10")
-    .attr("refX", 15)
-    .attr("refY", -1.5)
-    .attr("markerWidth", 6)
-    .attr("markerHeight", 6)
-    .attr("orient", "auto")
-  .append("svg:path")
-    .attr("d", "M0,-5L10,0L0,5");
-
-var path = svg.append("svg:g").selectAll("path")
-    .data(force.links())
-  .enter().append("svg:path")
-    .attr("class", function(d) { return "link " + d.type; })
-    .attr("marker-end", function(d) { return "url(#" + d.type + ")"; });
-
-var circle = svg.append("svg:g").selectAll(".node")
-    .data(force.nodes())
-  .enter().append("g")
-  .append("svg:circle")
-    .attr("r", 6)
-    .style("fill", function(d) { return color(d.group); })
-        .attr("id", function(d){ return d.name })
-        .on("click", function(d) {
-          alert(1)
-            //clicking on a node changes it's style
-            var self = $(this);
-            $('.node').attr("class", "node");
-            self.attr("class", "node selected");
-            clickNode(d);
-        });
-    //.call(force.drag);
-
-var text = svg.append("svg:g").selectAll("g")
-    .data(force.nodes())
-  .enter().append("svg:g");
-
-// A copy of the text with a thick white stroke for legibility.
-text.append("svg:text")
-    .attr("x", 8)
-    .attr("y", ".31em")
-    .attr("class", "shadow")
-    .text(function(d) { return d.name; });
-
-text.append("svg:text")
-    .attr("x", 8)
-    .attr("y", ".31em")
-    .text(function(d) { return d.name; });
-
-// Use elliptical arc path segments to doubly-encode directionality.
-function tick() {
-  path.attr("d", function(d) {
-    console.log(d)
-    var dx = d.target.x - d.source.x,
-        dy = d.target.y - d.source.y,
-        dr = Math.sqrt(dx * dx + dy * dy);
-    return "M" + d.source.x + "," + d.source.y + "A" + dr + "," + dr + " 0 0,1 " + d.target.x + "," + d.target.y;
-  });
-
-  circle.attr("transform", function(d) {
-    return "translate(" + d.x + "," + d.y + ")";
-  });
-
-  text.attr("transform", function(d) {
-    return "translate(" + d.x + "," + d.y + ")";
-  });
-}
-    
-}
-*/
 
 
 //when a node is clicked
@@ -449,30 +206,6 @@ function clickNode(d){
     //open up the detail window
     //$('#detail').modal('toggle');
 }
-
-// var graph = {
-//     "nodes":[],
-//     "links":[]
-// }
-var graph = {
-    "nodes":[],
-    "links":[]
-}
-
-var links = [
-  
-];
-
-var nodes = {};
-
-// Compute the distinct nodes from the links.
-links.forEach(function(link) {
-  link.source = nodes[link.source] || (nodes[link.source] = {name: link.source});
-  link.target = nodes[link.target] || (nodes[link.target] = {name: link.target});
-});
-
-graph.nodes = nodes;
-graph.links = links;
 
 
 
@@ -487,6 +220,9 @@ function fillGraph(vars){
     var name = round(vars['name'], 10);
     var value = round(vars['value'], 10);
     var isPrimitive = (type.primitive() != "")? 1: 0;
+    console.log(vars)
+    console.log(name)
+    graph.addNode(name);
 
     node = {
         "name": name,
@@ -508,20 +244,9 @@ function fillGraph(vars){
     }
 
 
-    graph["nodes"].push(node);
-    nodes[name] = node;
+    
 
     
-    // for (var i in line){
-    //     //check if class
-    //     var n = {"name": line[i], "group": 1};
-    //     graph["nodes"].push(n);
-
-    //     //add to shelf
-    //     shtml += "<li class='shelfItem'>"
-    //         + line[i]
-    //         + "</li>";
-    // }
 
     $('#shelfList').html(shtml);
 }

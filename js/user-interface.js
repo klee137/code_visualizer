@@ -85,10 +85,10 @@ $('.shelf').on('click', '.shelfItem', function(){
 	}
 	if(!isNaN(item) || item ==true || item == false){
 		type="primitive";
-	} else{
+	} else {
 		type="object";
 	}
-	$('.modal-title').text("name: "+name +" ("+type+")");
+	$('.modal-title').text("Name: "+name +" ("+type+")");
 	$('#detailList').html(newHtml);
 
 })
