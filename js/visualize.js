@@ -3,10 +3,10 @@ var built_in =["int[]"];
 
 function send(current){
 
-        var objects ={};
-        var relations =[];
-        var primitives= {} ;
-        var indicator="NA";
+    var objects ={};
+    var relations =[];
+    var primitives= {} ;
+    var indicator="NA";
 
     if(current[0].primitive()!=""){
 
@@ -101,29 +101,42 @@ function send(current){
 }
 
 
-//vars = ["int", "x", "=", "0"]
-//vars = ["x",".name", "=", "y", "+", "1"]
-
-/*var vstorage = ...
-function magic(vars){
-
-    print()
-
-    return {
-        "primitives": [{"name": "x", "value": "0", "type": "int"}],
-        "objects": [],
-        "relations": []
-    }
-}
-*/
 function print(text){
     $('#console').append("<br>"+text);
 }
 
 
 function arrow(s, t){
-    var link = {source: {"name": s}, target: {"name": t}, type: "link"};
-    graph.links.push(link);
+    var newlink = {source: {"name":s}, target: {"name":t}, type: "suit"};
+    graph.links.push(newlink);
+    links.push(newlink);
+
+
+
+    var link = d3.select('svg').selectAll("path.link")
+        .data(graph.links);
+
+    link.enter().insert("path")
+        .attr("class", "link")
+        .attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+
+    link.exit().remove();
+    var node = d3.select('svg').selectAll("g.node")
+            .data(graph.nodes);
+
+        node.enter().append("g")
+            .attr("class", "node")
+            .call(force.drag);
+
+    node.exit().remove();
+    force
+          .nodes(graph.nodes)
+          .links(graph.links)
+          .start();
+
 }
 
 function round(numstring, cutoff){
@@ -158,7 +171,6 @@ function round(numstring, cutoff){
 	}
 }
 
-
 function visualize(vars, references) {
     //clear
     var data = send(vars);
@@ -174,7 +186,7 @@ function visualize(vars, references) {
         fillGraph(obj);
     }
     if (rel.length > 0){
-        arrow(rel[0], rel[1])
+        arrow(rel[0], rel[1]);
     }
 
     //update the shelf
@@ -189,18 +201,132 @@ function visualize(vars, references) {
         }
     }
 
-    start();
+    start(nodes, links);
 }
 
 
-
 var force;
-// var svg = d3.select('#view')
-//         .append("g");
 var link, node;
 var nodeCount = 0;
 
-function start(){
+function start(ns, ls){
+    $('svg').empty();
+    var w = 960,
+        h = 500;
+
+var color = d3.scale.category20();
+
+force = d3.layout.force()
+    .nodes(d3.values(nodes))
+    .links(links)
+    .size([w, h])
+    .linkDistance(60)
+    .charge(-300)
+    .on("tick", tick)
+    .start();
+
+var svg = d3.select('svg')
+        .attr("width", w)
+        .attr("height", h)
+        .append("g")
+        .attr('class', 'mainG')
+        .call(d3.behavior.drag().on("drag", drag));
+
+     svg.append("rect")
+        .attr("class", "overlay")
+        .attr("width", w)
+        .attr("height", h);
+
+    function drag() {
+        var d = d3.event;
+        var curr = $('.mainG').attr("transform") || "translate(0,0)scale(1)";
+        //curr = curr.replace("translate", "").replace("(", "").replace(")", "");
+        curr = curr.replace("translate(","").replace(")","").replace(")","").split("scale(");
+        var newX = parseFloat(curr[0].split(",")[0], 10) + parseFloat(d.dx, 10);
+        var newY = parseFloat(curr[0].split(",")[1], 10) + parseFloat(d.dy, 10);
+        var currScale = parseFloat(curr[1], 10);
+      console.log(curr)
+        $('.mainG').attr("transform", "translate(" + newX + "," + newY + ")" + "scale("+ currScale +")");
+    }
+
+// Per-type markers, as they don't inherit styles.
+svg.append("svg:defs").selectAll("marker")
+    .data(["suit", "licensing", "resolved"])
+  .enter().append("svg:marker")
+    .attr("id", String)
+    .attr("viewBox", "0 -5 10 10")
+    .attr("refX", 15)
+    .attr("refY", -1.5)
+    .attr("markerWidth", 6)
+    .attr("markerHeight", 6)
+    .attr("orient", "auto")
+  .append("svg:path")
+    .attr("d", "M0,-5L10,0L0,5");
+
+var path = svg.append("svg:g").selectAll("path")
+    .data(force.links())
+  .enter().append("svg:path")
+    .attr("class", function(d) { return "link " + d.type; })
+    .attr("marker-end", function(d) { return "url(#" + d.type + ")"; });
+
+var circle = svg.append("svg:g").selectAll(".node")
+    .data(force.nodes())
+  .enter().append("g")
+  .append("svg:circle")
+    .attr("r", 6)
+    .style("fill", function(d) { return color(d.group); })
+        .attr("id", function(d){ return d.name })
+        .on("click", function(d) {
+            //clicking on a node changes it's style
+            var self = $(this);
+            $('.node').attr("class", "node");
+            self.attr("class", "node selected");
+            clickNode(d);
+        });
+    //.call(force.drag);
+
+var text = svg.append("svg:g").selectAll("g")
+    .data(force.nodes())
+  .enter().append("svg:g");
+
+// A copy of the text with a thick white stroke for legibility.
+text.append("svg:text")
+    .attr("x", 8)
+    .attr("y", ".31em")
+    .attr("class", "shadow")
+    .text(function(d) { return d.name; });
+
+text.append("svg:text")
+    .attr("x", 8)
+    .attr("y", ".31em")
+    .text(function(d) { return d.name; });
+
+    // Use elliptical arc path segments to doubly-encode directionality.
+    function tick() {
+      path.attr("d", function(d) {
+        if (typeof d != "undefined" && typeof d != "NaN"){
+            var dx = d.target.x - d.source.x,
+            dy = d.target.y - d.source.y,
+            dr = Math.sqrt(dx * dx + dy * dy);
+            return "M" + d.source.x + "," + d.source.y + "A" + dr + "," + dr + " 0 0,1 " + d.target.x + "," + d.target.y;
+        }
+        return;
+      });
+
+      circle.attr("transform", function(d) {
+        return "translate(" + d.x + "," + d.y + ")";
+      });
+
+      text.attr("transform", function(d) {
+        return "translate(" + d.x + "," + d.y + ")";
+      });
+    }
+
+   
+}
+
+/*
+function start(ns, ls){
     $('svg').empty();
   var w = window.innerWidth*.92,
       h = window.innerHeight;
@@ -208,8 +334,8 @@ function start(){
 var color = d3.scale.category20();
 
 var force = d3.layout.force()
-    .nodes(graph.nodes)
-    .links(graph.links)
+    .nodes(ns)
+    .links(ls)
     .size([w, h])
     .linkDistance(60)
     .charge(-300)
@@ -313,6 +439,7 @@ function tick() {
 }
     
 }
+*/
 
 
 //when a node is clicked
@@ -334,34 +461,7 @@ var graph = {
 
 // http://blog.thomsonreuters.com/index.php/mobile-patent-suits-graphic-of-the-day/
 var links = [
-  {source: "Microsoft", target: "Amazon", type: "licensing"},
-  {source: "Microsoft", target: "HTC", type: "licensing"},
-  {source: "Samsung", target: "Apple", type: "suit"},
-  {source: "Motorola", target: "Apple", type: "suit"},
-  {source: "Nokia", target: "Apple", type: "resolved"},
-  {source: "HTC", target: "Apple", type: "suit"},
-  {source: "Kodak", target: "Apple", type: "suit"},
-  {source: "Microsoft", target: "Barnes & Noble", type: "suit"},
-  {source: "Microsoft", target: "Foxconn", type: "suit"},
-  {source: "Oracle", target: "Google", type: "suit"},
-  {source: "Apple", target: "HTC", type: "suit"},
-  {source: "Microsoft", target: "Inventec", type: "suit"},
-  {source: "Samsung", target: "Kodak", type: "resolved"},
-  {source: "LG", target: "Kodak", type: "resolved"},
-  {source: "RIM", target: "Kodak", type: "suit"},
-  {source: "Sony", target: "LG", type: "suit"},
-  {source: "Kodak", target: "LG", type: "resolved"},
-  {source: "Apple", target: "Nokia", type: "resolved"},
-  {source: "Qualcomm", target: "Nokia", type: "resolved"},
-  {source: "Apple", target: "Motorola", type: "suit"},
-  {source: "Microsoft", target: "Motorola", type: "suit"},
-  {source: "Motorola", target: "Microsoft", type: "suit"},
-  {source: "Huawei", target: "ZTE", type: "suit"},
-  {source: "Ericsson", target: "ZTE", type: "suit"},
-  {source: "Kodak", target: "Samsung", type: "resolved"},
-  {source: "Apple", target: "Samsung", type: "suit"},
-  {source: "Kodak", target: "RIM", type: "suit"},
-  {source: "Nokia", target: "Qualcomm", type: "suit"}
+  
 ];
 
 var nodes = {};
@@ -410,6 +510,8 @@ function fillGraph(vars){
 
 
     graph["nodes"].push(node);
+    nodes[name] = node;
+
     
     // for (var i in line){
     //     //check if class

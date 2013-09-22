@@ -9,6 +9,7 @@
 	<link href="css/style.css" rel="stylesheet">
 	<script src="js/spot.js"></script>
 	<script src="http://d3js.org/d3.v3.min.js"></script>
+	<script type="text/javascript" src="js/underscore-min.js"></script>
 	<script src="js/visualize.js"></script>
 	
 </head>
@@ -17,7 +18,7 @@
 <!-- These are elements on the page like buttons and containers -->
 <ul id="setList">
 	<li class="set chosen">
-		Code
+		Code_Visualizer
 	</li>
 	<li class="set" id="pasteBtn">
 		Paste
@@ -96,6 +97,7 @@ iarray[3] = 3;
 	<!--console &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-->
 </div>
 <div id="rightMenu">
+	<p class='lead' id="consoleTitle">console</p>
 	<div id="nextLine" class='btn btn-success'>Next Line</div>
 	<div id="resetBtn" onClick='reset()' class='btn btn-warning'>Reset</div>
 </div>

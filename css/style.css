@@ -44,13 +44,18 @@ body{
 	position:fixed;
 	right:0;
 	top:15%;
+	margin-top:20px;
+}
+#consoleTitle{
+	margin: -30px 0px 10px -60px;
+	color: gray;
 }
 #nextLine, #resetBtn{
 	border-radius: 0px;
-	display: block;
+	display: inline-block;
 	height:30px;
 	width:95px;
-	margin-bottom:2px;
+	margin-bottom:5px;
 }
 
 .menuBtn{
@@ -235,7 +240,7 @@ dt{
 }
 .selected{
 	stroke: lightpink;
-	stroke-width: 3px;
+	stroke-width: 300px;
 	//background: -webkit-radial-gradient(circle 16px at 20px 50%, black 0%, black 14px, rgba(0,0,0,0.3) 18px, rgba(0,0,0,0) 19px);
 }
 .selectedClass{
