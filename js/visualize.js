@@ -85,6 +85,11 @@ function send(current){
             }
 
         }
+    } else {
+        var reserved = ["for", "if", "while", "else", "public", "private", "class"];
+        if (current.length >= 2 && reserved.indexOf(current[0]) == -1 && current.indexOf("=") != -1){
+            relations.push(current[0], current[current.length-1]);
+        }
     }
 
 
@@ -117,8 +122,8 @@ function print(text){
 
 
 function arrow(s, t){
-    var link = {source: s, target: t, type: "link"};
-    graph.nodes.push(link);
+    var link = {source: {"name": s}, target: {"name": t}, type: "link"};
+    graph.links.push(link);
 }
 
 function round(numstring, cutoff){
@@ -126,7 +131,6 @@ function round(numstring, cutoff){
         return;
     }
 	cutoff = cutoff || 8;
-    console.log(numstring);
     var max = Math.pow(10, cutoff);
 	if (!isNaN(parseInt(numstring ,10))){						//int
         if (parseInt(numstring ,10) > max){
@@ -170,10 +174,7 @@ function visualize(vars, references) {
         fillGraph(obj);
     }
     if (rel.length > 0){
-        for (var r=0; r<rel.length; r++){
-            var relation = rel[r];
-            graph.links.push(relation);
-        }
+        arrow(rel[0], rel[1])
     }
 
     //update the shelf
@@ -201,48 +202,31 @@ var nodeCount = 0;
 
 function start(){
     $('svg').empty();
-  var width = window.innerWidth*.92,
-      height = window.innerHeight;
+  var w = window.innerWidth*.92,
+      h = window.innerHeight;
 
-  var color = d3.scale.category20();
+var color = d3.scale.category20();
 
-  force = d3.layout.force()
-      .gravity(.005)
-      .distance(100)
-      .charge(-50)
-      .linkDistance(30)
-      .size([width, height])
-      .nodes(graph.nodes)
-      .links(graph.links)
-      .start();
+var force = d3.layout.force()
+    .nodes(graph.nodes)
+    .links(graph.links)
+    .size([w, h])
+    .linkDistance(60)
+    .charge(-300)
+    .on("tick", tick)
+    .start();
 
-    //var svg = d3.select("body").append("svg")
-    var svg = d3.select('svg')
-        .attr("width", width)
-        .attr("height", height)
+var svg = d3.select('svg')
+        .attr("width", w)
+        .attr("height", h)
         .append("g")
         .attr('class', 'mainG')
         .call(d3.behavior.drag().on("drag", drag));
 
-    // svg.append("svg:defs").selectAll("marker")
-    //     .data(["suit", "licensing", "resolved"])
-    //   .enter().append("svg:marker")
-    //     .attr("id", String)
-    //     .attr("viewBox", "0 -5 10 10")
-    //     .attr("refX", 15)
-    //     .attr("refY", -1.5)
-    //     .attr("markerWidth", 6)
-    //     .attr("markerHeight", 6)
-    //     .attr("orient", "auto")
-    //   .append("svg:path")
-    //     .attr("d", "M0,-5L10,0L0,5");
-
-
-
-    svg.append("rect")
+     svg.append("rect")
         .attr("class", "overlay")
-        .attr("width", width)
-        .attr("height", height);
+        .attr("width", w)
+        .attr("height", h);
 
     function drag() {
         var d = d3.event;
@@ -252,50 +236,81 @@ function start(){
         var newX = parseFloat(curr[0].split(",")[0], 10) + parseFloat(d.dx, 10);
         var newY = parseFloat(curr[0].split(",")[1], 10) + parseFloat(d.dy, 10);
         var currScale = parseFloat(curr[1], 10);
+      
         $('.mainG').attr("transform", "translate(" + newX + "," + newY + ")" + "scale("+ currScale +")");
     }
 
-    
+// Per-type markers, as they don't inherit styles.
+svg.append("svg:defs").selectAll("marker")
+    .data(["link", "licensing", "resolved"])
+  .enter().append("svg:marker")
+    .attr("id", String)
+    .attr("viewBox", "0 -5 10 10")
+    .attr("refX", 15)
+    .attr("refY", -1.5)
+    .attr("markerWidth", 6)
+    .attr("markerHeight", 6)
+    .attr("orient", "auto")
+  .append("svg:path")
+    .attr("d", "M0,-5L10,0L0,5");
 
-    link = svg.selectAll(".link")
-        .data(graph.links)
-      .enter().append("line")
-        .attr("class", "link");
+var path = svg.append("svg:g").selectAll("path")
+    .data(force.links())
+  .enter().append("svg:path")
+    .attr("class", function(d) { return "link " + d.type; })
+    .attr("marker-end", function(d) { return "url(#" + d.type + ")"; });
 
-    node = svg.selectAll(".node")
-        .data(graph.nodes)
-      .enter().append("g");
-
-    node.append("rect")
-        .attr("class", "node")
-        .attr("height", 20)
-        .attr("width", 20)
-        .style("fill", function(d) { return color(d.group); })
+var circle = svg.append("svg:g").selectAll(".node")
+    .data(force.nodes())
+  .enter().append("g")
+  .append("svg:circle")
+    .attr("r", 6)
+    .style("fill", function(d) { return color(d.group); })
         .attr("id", function(d){ return d.name })
         .on("click", function(d) {
+          alert(1)
             //clicking on a node changes it's style
             var self = $(this);
             $('.node').attr("class", "node");
             self.attr("class", "node selected");
             clickNode(d);
         });
-        
+    //.call(force.drag);
 
-    node.append("text")
-        .attr("dx", 25)
-        .attr("dy", "-1.0em")
-        .text(function(d) { return d.name })
-        
+var text = svg.append("svg:g").selectAll("g")
+    .data(force.nodes())
+  .enter().append("svg:g");
 
+// A copy of the text with a thick white stroke for legibility.
+text.append("svg:text")
+    .attr("x", 8)
+    .attr("y", ".31em")
+    .attr("class", "shadow")
+    .text(function(d) { return d.name; });
 
-    force.on("tick", function() {
-      link.attr("x1", function(d) { return d.source.x; })
-          .attr("y1", function(d) { return d.source.y; })
-          .attr("x2", function(d) { return d.target.x; })
-          .attr("y2", function(d) { return d.target.y; });
+text.append("svg:text")
+    .attr("x", 8)
+    .attr("y", ".31em")
+    .text(function(d) { return d.name; });
 
-      node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
-    });
+// Use elliptical arc path segments to doubly-encode directionality.
+function tick() {
+  path.attr("d", function(d) {
+    console.log(d)
+    var dx = d.target.x - d.source.x,
+        dy = d.target.y - d.source.y,
+        dr = Math.sqrt(dx * dx + dy * dy);
+    return "M" + d.source.x + "," + d.source.y + "A" + dr + "," + dr + " 0 0,1 " + d.target.x + "," + d.target.y;
+  });
+
+  circle.attr("transform", function(d) {
+    return "translate(" + d.x + "," + d.y + ")";
+  });
+
+  text.attr("transform", function(d) {
+    return "translate(" + d.x + "," + d.y + ")";
+  });
+}
     
 }
 
