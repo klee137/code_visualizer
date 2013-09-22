@@ -20,6 +20,9 @@ $('#pasteBtn').click(function(){
 	$("textarea").slideToggle(200);
 });
 $("textarea").hide();
+$('textarea').blur(function(){
+	$('textarea').slideUp();
+})
 // $('.shelf').mouseenter(function(){
 // 	//$('.shelfLeft, .shelfRight').css("background-color", "dimgray")
 // })
@@ -40,7 +43,7 @@ $('.shelfRight').click(function(){
 $('.shelf').on('click', '.shelfItem', function(){
 	//clear existing detail
 	//$('#detail').hide().fadeIn();
-	$('#detail').modal('toggle')
+	$('#detail').modal('toggle');
 
 })
 
@@ -86,6 +89,9 @@ $('.set').click(function(){
 	if (name == "code"){
 
 	}
+
+	$('#setList').slideUp();
+	$('.cover').fadeOut();
 })
 
 

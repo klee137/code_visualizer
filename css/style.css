@@ -1,6 +1,6 @@
 body{
 	//background: url("http://images.wikia.com/assassinscreed/images/8/8b/Old_paper.jpg");
-	background: -webkit-linear-gradient(0, rgb(228, 228, 228),#000000 100%);
+	background: -webkit-linear-gradient(0, rgb(188, 188, 198),#ffffff 100%);
 }
 .left{
 	position:absolute;
@@ -76,6 +76,7 @@ body{
 #shelfList{
 	margin-left: 40px;
 	margin-right: 40px;
+	overflow: hidden;
 }
 .shelfItem{
 	display:inline;
@@ -227,7 +228,15 @@ dt{
 }
 
 
-
+.dot{
+	width: 60px; height: 60px; 
+	background-color: rgb(148, 188, 58); 
+	border-radius: 30px; 
+}
+.box{
+	width: 60px; height: 60px; 
+	background-color: rgb(148, 188, 58); 
+}
 
 
 

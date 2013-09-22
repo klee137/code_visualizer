@@ -19,16 +19,16 @@
 	<li class="set chosen">
 		Code
 	</li>
-	<li class="set">
+	<li class="set" id="pasteBtn">
 		Paste
 	</li>
-	<li class="set">
+	<li class="set" onClick="uploadFile()">
 		Upload
 	</li>
 	<li class="set">
 		Stats
 	</li>
-	<li class="set">
+	<li class="set" onClick='go()'>
 		Run
 	</li>
 </ul>
@@ -62,7 +62,7 @@
 -->
 </nav>
 <section class='shelf'>
-	<ul id='shelfList'>
+	<div id='shelfList'>
 		<!--
 		<li class='shelfItem'>
 			Test1
@@ -70,17 +70,12 @@
 		<li class='shelfItem'>
 			Test1
 		</li>-->
-	</ul>
+	</div>
 	<i class="glyphicon glyphicon-chevron-left shelfLeft"></i>
 	<i class="glyphicon glyphicon-chevron-right shelfRight"></i>
 </section>
 <textarea class='code'>
-boolean a;
-int x=2;
-char c='d';
-int y=3;
-x =3 ;
-z=4;
+int x = 5;
 </textarea>
 
 <div class="svgBox">
@@ -140,125 +135,828 @@ z=4;
 <!-- ACTUAL CODE STUFF -->
 <script src="js/user-interface.js"></script>
 <script>
-	var lines =$('textarea').val().trim().split('\n');
 
-	var arrStr; //array of segments
-	var storage = []; //arrays of segmented lines
-	var vstorage=[]; //variable storage
-	var search ={}; //key hashmap
-	var search1=[]; //key storage
+	
 
-	var ptr; //helping variable1
-	var ptr2; //helping variable2
-	var helper; //helping variable3
-	var index;
-	var n;
+	Array.prototype.visibility = function( ){
+		if(this.indexOf("public")!=-1){
+			return "public";
+		}
+		else if(this.indexOf("private")!=-1){
+			return "private";
+		}
+		else if(this.indexOf("protected")!=-1){
+			return "protected";
+		}
+		else{
+			return "default";
+		}
 
-
-	for(var i=0;i<8;i++){
-		vstorage.push([]);
 	}
-	// 0-int 1-byte 2-short 3-long 4-float 5-double 6-boolean 7-char 
+	String.prototype.primitive = function(){
+		if(this =="int"){
+			return "int";
+		}
+		else if(this =="char"){
+			return "char";
+		}
+		else if(this =="boolean"){
+			return "boolean";
+		}
+		else if(this =="float"){
+			return "float";
+		}
+		else if(this =="short"){
+			return "short";
+		}
+		else if(this =="long"){
+			return "long";
+		}
+		else if(this =="byte"){
+			return "byte";
+		}
+		else if(this =="double"){
+			return "double";
+		} else{
+			return "";
 
-
-	for(index=0;index<lines.length;index++){
-		arrStr=null;
-
-		var temp=lines[index].trim().split(' ');
-		console.log(temp);
-		if(temp.length>0){
-			arrStr=[];
-			
-			for(var i=0;i<temp.length;i++){
-				if((n=temp[i].indexOf("="))!=-1){ //case when there is equal sign
-					if(n!=0){
-						arrStr.push(temp[i].substring(0,n));
-					}
-					arrStr.push(temp[i].substring(n,n+1));
-					if(n+1 !=temp[i].length){
-						arrStr.push(temp[i].substring(n+1,temp[i].length));
-					}
-				} else{
-					arrStr.push(temp[i]);
-				}
-			}
-		} //done putting all the segments into arrStr
-
-		if(arrStr !=null){
-			if((n=arrStr[arrStr.length-1].indexOf(";"))!=-1){
-				if(n==0){
-					arrStr.pop();
-				} else{
-					arrStr[arrStr.length-1]=arrStr[arrStr.length-1].replace(";","");
-				}
-				//add all the variables into the storage
-				if(arrStr[0].indexOf("int")!=-1){
-					vstorage[0].push(arrStr[1]);
-					search1.push(arrStr[1]);
-					if(arrStr.length>3){
-						search[arrStr[1]]=arrStr[3];
-					}
-				} else if(arrStr[0].indexOf("byte")!=-1){
-					vstorage[1].push(arrStr[1]);
-					search1.push(arrStr[1]);
-					if(arrStr.length>3){
-						search[arrStr[1]]=arrStr[3];
-					}
-				} else if(arrStr[0].indexOf("long")!=-1){
-					vstorage[2].push(arrStr[1]);
-					search1.push(arrStr[1]);
-					if(arrStr.length>3){
-						search[arrStr[1]]=arrStr[3];
-					}
-				} else if(arrStr[0].indexOf("float")!=-1){
-					vstorage[3].push(arrStr[1]);
-					search1.push(arrStr[1]);
-					if(arrStr.length>3){
-						search[arrStr[1]]=arrStr[3];
-					}
-				} else if(arrStr[0].indexOf("double")!=-1){
-					vstorage[4].push(arrStr[1]);
-					search1.push(arrStr[1]);
-					if(arrStr.length>3){
-						search[arrStr[1]]=arrStr[3];
-					}
-				} else if(arrStr[0].indexOf("boolean")!=-1){
-					vstorage[5].push(arrStr[1]);
-					search1.push(arrStr[1]);
-					if(arrStr.length>3){
-						search[arrStr[1]]=arrStr[3];
-					}
-				} else if(arrStr[0].indexOf("char")!=-1){
-					vstorage[6].push(arrStr[1]);
-					search1.push(arrStr[1]);
-					if(arrStr.length>3){
-						search[arrStr[1]]=arrStr[3];
-					}
-				} else{
-
-					for(var i=0;i<search1.length;i++){
-						if((search1[i]===arrStr[0])){
-							break;
-						}
-						if(i==search1.length-1){
-							console.log("ERROR***************variable is not declared yet");
-							throw new Error("illegal operation for variable");
-						}
-					}
-				}
-				storage.push(arrStr);
-			}
 		}
 
 	}
 
+	//VARIABLES 
+	function variable(){
+		this.type;
+		this.value=0;
+		this.is_static = false;
+		this.visibility_type = "default";
+	}
 
-	for(var i=0;i<storage.length;i++){
-			console.log(storage[i]);		
+
+	function classStorage(){
+		this.name ="NA"; 
+		this.visibility;
+		this.impStore = []; //stores import storage
+		this.vstorage = {};	//stores variable storage
+		this.mstorage = []; //stores method storage
+		this.pstorage = []; //stores private class
 	}
-	for(var i=0;i<7;i++){
-		console.log(vstorage[i]);
+
+	function method(){
+		this.visibility_type = "default";
+		this.is_static = false;
+		this.return_type;
+		this.method_name;
+		this.vstorage = {};
+		this.args = [];
+		this.content_lines =[];
 	}
+
+	var ostorage, lines, storage, testClass, testArray;
+	function go(){
+		//empty graph
+	    graph = {
+	        "nodes": [],
+	        "links": [],
+	    }
+	    $('svg').empty();
+	    $('#shelfList').html("");
+
+		//SUPER VARIABLES
+		ostorage ={
+			'objValue' : {}
+		}
+		lines =$('textarea').val().trim().split('\n');
+		storage=[];
+
+
+		// BEGINNING OF THE PROGRAM
+
+		for(var i=0;i<lines.length;i++){
+			var temp = lines[i].trim();
+			if(temp.length<1){
+				continue;
+			} 
+			var x = parser(temp)
+			storage.push(parser(temp));
+
+			visualize(x, findRefs(x));
+		}
+
+		testClass = classOrganizer(storage);
+
+		for(var i=0;i<testClass.mstorage.length;i++){
+			testClass.mstorage[i].content_lines = if_block(testClass.mstorage[i].content_lines,testClass.mstorage[i].vstorage);
+		}
+
+
+		//testing area
+
+		console.log("name");
+		console.log(testClass.name);
+		console.log("import storage");
+		console.log(testClass.impStore);
+		console.log("method storage");
+		console.log(testClass.mstorage[0].visibility_type +" "+testClass.mstorage[0].is_static +" "+testClass.mstorage[0].return_type+" "+testClass.mstorage[0].method_name);
+		testArray = testClass.mstorage[0].content_lines;
+		for(var i=0;i<testArray.length;i++){
+			console.log(testArray[i]);
+		}
+	}
+
+
+
+
+
+
+	//main helper
+		//output: array of lines without if statement
+	//make new array_lines, but don't add the if statements, making the new array_lines concise
+	//ONLY add the if statements whose conditions are true, without the if(){}
+	function if_block(array_lines,vstorage){
+		var start_index =[];
+		var end_index =[];
+		var exclude_start =[];
+		var exclude_end =[];
+		var temp1=0;
+		var statement;
+		var return_lines =[];
+
+		for(var a=0; a<array_lines.length; a++){
+			for(var b=0; b<array_lines[a].length; b++){
+				if(array_lines[a][b]==="if"){
+					start_index.push(a);
+				}
+			}
+		}
+
+		for(var a=0; a<start_index.length; a++){
+			temp1=1; //starts at 1 because if line contains open bracket
+			for(var b=start_index[a]+1; b<start_index.length; b++){
+				for(var c=0; c<(array_lines[b]).length; c++){
+					if(array_lines[b][c]==="{"){
+						temp1++;
+					}else if(array_lines[b][c]==="}"){
+						temp1--;
+					}
+					if(temp1==0){
+						end_index.push(b);
+					}
+				}
+			}
+		}
+
+		for(var a=0; a<start_index.length; a++){
+			temp1 = start_index[a];
+			statement = "";
+			
+			for(var b=2; array_lines[temp1][b]!==")"; b++){ //b=2 because first two elements are "if" and "("
+				if(isNaN(array_lines[temp1][b]) && isValid(array_lines[temp1][b])){
+					console.log(vstorage[array_lines[temp1][b]]);
+					eval(array_lines[temp1][b] +"="+(vstorage[array_lines[temp1][b]]).value.toString());
+				}
+				statement = statement + array_lines[temp1][b];
+			}
+
+			if(!eval(statement)){
+				exclude_start.push(start_index[a]);
+				exclude_end.push(end_index[a]);
+			}
+		}
+
+		for(var a=0; a<array_lines.length; a++){
+			if(a==start_index[0]){
+				if(a==exclude_start[0]){
+					a = exclude_end[0];
+					exclude_end.slice(0,1);
+					exclude_start.slice(0,1);
+				}else{
+					a++;
+					start_index.slice(0,1);
+					end_index.slice(0,1);
+				}
+			}
+			return_lines.push(array_lines[a]);
+		}
+
+		return return_lines;
+	}
+
+	function forStatement(){
+		
+	}
+	function whileStatement(){
+		
+	}
+
+
+
+	function classOrganizer(entireArray){
+		var index;
+		var classObject = new classStorage();
+		var storage2 = []; //for method content
+		//initialize the variables
+
+		for(i=0;i<entireArray.length;i++){
+			var temp = entireArray[i];
+			
+			if(temp[0]==="import"){
+				classObject.impStore.push(temp.splice(1,temp.length));
+			}
+			else if(temp[0] ==="public" && temp[1] ==="class"){
+				classObject.name =temp[2]; //save name first then arrays
+				classObject.visibility = "public";
+
+				index=endbracket(entireArray,i+1);
+				for(i=i+1;i<entireArray.length;i++){
+					var temp1 = entireArray[i];
+					if((temp1.indexOf("(")!=-1 && temp1.indexOf(")")!=-1) && temp1.indexOf("{")!=-1){ //method case
+						classObject.mstorage.push(methodmaker(entireArray,i));
+						i=endbracket(entireArray,i+1);
+					} 
+					else if((s=temp1[0].primitive())!==""){
+						var vinstance = new variable();
+
+						vinstance.type=s;
+						if(temp1[2]==="="){
+							vinstance.value =temp1[3];
+						}
+						vinstance.is_static = temp1.indexOf("static")!=-1;
+						vinstance.visibility_type=temp1.visibility();
+
+						classObject.vstorage[temp1[1]]=vinstance; 
+
+					}
+					else if(temp1[0] in classObject.vstorage){
+						if(!isNaN(temp1[2]))
+						classObject.vstorage[temp1[0]]=temp1[2];
+					}
+					//private class case
+					else if(temp1[0]==="private" && temp1[1] ==="class"){
+						var pClassObject = new classStorage();
+						pClassObject.name = temp1[2];
+						pClassObject.visibility = "private";
+						var index1=endbracket(entireArray,i+1);
+						for(i=i+1;i<entireArray.length;i++){
+
+							if((s=entireArray[i][0].primitive())!==""){
+								var vinstance = new variable();
+								vinstance.type=s;
+								if(entireArray[i][2]==="="){
+									vinstance.value =entireArray[i][3];
+								}
+								vinstance.is_static = entireArray[i].indexOf("static")!=-1;
+								vinstance.visibility_type=entireArray[i].visibility();
+								pClassObject.vstorage[entireArray[i][1]]=vinstance; 
+							}
+							else if(entireArray[i][0] in pClassObject.vstorage){
+								if(!NaN(entireArray[i][2]))
+								pClassObject.vstorage[entireArray[i][0]]=entireArray[i][2];
+
+							}
+							else if((temp1.indexOf("(")!=-1 && temp1.indexOf(")")!=-1) && temp1.indexOf("{")!=-1){
+								pclassObject.mstorage.push(pclassObject.methodmaker(entireArray,i));
+								i=endbracket(entireArray,i+1);
+							}
+							else if(index1==i){
+								classObject.pstorage.push(pClassObject);
+								break;
+							}
+						}
+					}
+					else if(i==index){
+						break;
+					}
+
+				}
+
+			} 
+		}
+		return classObject;
+
+	}
+
+	function methodmaker(entireArray,i){
+			var myMethod = new method();
+			var storage2 = [];
+
+			//measures index
+			index= endbracket(entireArray,i+1);
+			//store visibility
+			myMethod.visibility_type= entireArray[i].visibility();
+			//check static
+			myMethod.is_static=entireArray[i].indexOf("static")!=-1;
+			myMethod.return_type = entireArray[i][entireArray[i].indexOf("(")-2];
+			myMethod.method_name = entireArray[i][entireArray[i].indexOf("(")-1];
+			var tracker=1;
+			//store arguments
+			while(true){
+				myMethod.args.push(entireArray[i][entireArray[i].indexOf("(")+tracker]);
+				myMethod.args.push(entireArray[i][entireArray[i].indexOf("(")+tracker+1]);
+
+				if(entireArray[i][entireArray[i].indexOf("(")+tracker+2]!=","){
+					break;
+				}
+				tracker=tracker+3;
+			}
+			//go through the content && tells when it ends
+			for(i=i+1;i<entireArray.length;i++){
+				temp2 = entireArray[i];
+
+				if((s=temp2[0].primitive())!=""){
+					var vinstance = new variable();
+
+					vinstance.type=s;
+					//do if equalized
+					if(temp2[2]==="="){
+						vinstance.value =temp2[3];
+					}
+					vinstance.is_static = (temp2.indexOf("static")!=-1);
+					vinstance.visibility_type=temp2.visibility();
+					myMethod.vstorage[temp2[1]]=vinstance; 
+				}
+				if(temp2[0] in myMethod.vstorage){
+					if(!isNaN(temp2[2])){
+						myMethod.vstorage[temp2[0]].value=temp2[2];
+					}
+				}
+				if(i==index){
+					myMethod.content_lines=storage2;
+					return myMethod;
+				}
+				storage2.push(temp2);
+			}	
+			return null;
+	}
+	function endbracket(entireArray,i){
+		var index=1;
+
+		for(var x=i+1;x<entireArray.length;x++){
+			if(entireArray[x].indexOf("{")!=-1){
+				index++;
+			}
+			if(entireArray[x].indexOf("}")!=-1){
+				index--;
+				if(index==0){
+					return x;
+				}
+			}
+		}
+		return -1; // error detector
+	}
+	function parser(temp){
+		temp = temp.split(' ');
+		//go through inequality signs < = == >
+		for(var x=0;x<5;x++){
+			temp = inequalityStatement(temp);
+		}
+		// go through brackets 
+		for(var x=0;x<10;x++){
+			temp = brackets(temp);
+		}
+		// go through math expression
+		for(var x=0;x<5;x++){
+			temp = mathExpression(temp);
+		}
+		// go through middle brackets 
+		for(var x=0;x<2;x++){
+			temp = semicolonM(temp);
+		}
+		for( var x=0;x<5;x++){
+			temp = commaParser(temp);
+		}
+		for(var x=0;x<5;x++){
+			temp = AndOr(temp);
+		}
+		for(var x=0;x<5;x++){
+			temp = dotParser(temp);
+		}
+
+		// go through semicolon
+		temp = semicolon(temp);
+
+		//finally add it to the storage
+		temp=temp.filter(function(a){return a!=""})
+
+		return temp;
+
+	}
+
+
+
+
+	//sub helper
+	function brackets(lineArray){
+		var retArray=[];
+
+		for(var i=0;i<lineArray.length;i++){
+			if((n=lineArray[i].indexOf("("))!=-1){
+				if(n!=0){
+					retArray.push(lineArray[i].substring(0,n));
+				}
+				retArray.push(lineArray[i].substring(n,n+1));
+				if(n+1!=lineArray[i].length){
+					var str= lineArray[i].substring(n+1,lineArray[i].length);
+					if((n=str.indexOf(")"))!=-1){
+						if(n!=0){
+							retArray.push(str.substring(0,n));
+						}
+						retArray.push(str.substring(n,n+1));
+						if(n+1!=str.length){
+							retArray.push(str.substring(n+1,str.length));
+						}
+					} else{
+						retArray.push(str);
+					}
+				}
+			}
+			else if((n=lineArray[i].indexOf(")"))!=-1){
+				if(n!=0){
+					retArray.push(lineArray[i].substring(0,n));
+				}
+				retArray.push(lineArray[i].substring(n,n+1));
+				if(n+1!=lineArray[i].length){
+					retArray.push(lineArray[i].substring(n+1,lineArray[i].length));
+				}
+			} else{
+				retArray.push(lineArray[i]);
+			}
+		}
+
+		var retArray1=[];
+
+		for(var i=0;i<retArray.length;i++){
+			if((n=retArray[i].indexOf("{"))!=-1){
+				if(n!=0){
+					retArray1.push(retArray[i].substring(0,n));
+				}
+				retArray1.push(retArray[i].substring(n,n+1));
+				if(n+1!=retArray[i].length){
+					var str= retArray[i].substring(n+1,retArray[i].length);
+					if((n=str.indexOf("}"))!=-1){
+						if(n!=0){
+							retArray1.push(str.substring(0,n));
+						}
+						retArray1.push(str.substring(n,n+1));
+						if(n+1!=str.length){
+							retArray1.push(str.substring(n+1,str.length));
+						}
+					} else{
+						retArray1.push(str);
+					}
+				}
+			}
+			else if((n=retArray[i].indexOf("}"))!=-1){
+				if(n!=0){
+					retArray1.push(retArray[i].substring(0,n));
+				}
+				retArray1.push(retArray[i].substring(n,n+1));
+				if(n+1!=retArray.length){
+					retArray1.push(retArray[i].substring(n+1,retArray[i].length));
+				}
+			} else{
+				retArray1.push(retArray[i]);
+			}
+		}
+
+		return retArray1;
+	}
+
+
+	//covers the && and || case 
+	function AndOr(lineArray){
+
+		var retArray=[];
+		//&&
+		for(var i=0;i<lineArray.length;i++){
+			if((n=lineArray[i].indexOf("&"))!=-1){
+				if(n!=0){
+					retArray.push(lineArray[i].substring(0,n));
+				}
+				retArray.push(lineArray[i].substring(n,n+1));
+				if(n+1 !=lineArray[i].length){
+					if(lineArray[i].substring(n+1,n+2)==="&"){
+						retArray.pop();
+						retArray.push("&&");
+						if(n+2!=lineArray[i].length){
+							retArray.push(lineArray[i].substring(n+2,lineArray[i].length));
+						}
+					} else{
+						retArray.push(lineArray[i].substring(n+1,lineArray[i].length));
+					}
+				}
+			} else{
+				retArray.push(lineArray[i]);
+			}
+		}
+		
+		var retArray1=[];
+		// || 
+		for(var i=0;i<retArray.length;i++){
+			if((n=retArray[i].indexOf("|"))!=-1){
+				if(n!=0){
+					retArray1.push(retArray[i].substring(0,n));
+				}
+				retArray1.push(retArray[i].substring(n,n+1));
+				if(n+1 !=retArray[i].length){
+					if(retArray[i].substring(n+1,n+2)==="|"){
+						retArray1.pop();
+						retArray1.push("||");
+						if(n+2!=retArray[i].length){
+							retArray1.push(retArray[i].substring(n+2,retArray[i].length));
+						}
+					} else{
+						retArray1.push(retArray[i].substring(n+1,retArray[i].length));
+					}
+				}
+			} else{
+				retArray1.push(retArray[i]);
+			}
+		}
+		
+
+		return retArray1;
+
+	}
+
+
+
+
+
+
+	function commaParser(lineArray){
+		var retArray=[];
+		for(var i=0;i<lineArray.length;i++){
+			if((n=lineArray[i].indexOf(","))!=-1){
+				if(n!=0){
+					retArray.push(lineArray[i].substring(0,n));
+				}
+				retArray.push(lineArray[i].substring(n,n+1));
+				if((n+1) != lineArray[i].length){
+					retArray.push(lineArray[i].substring(n+1,lineArray[i].length));
+				}
+
+			} else{
+				retArray.push(lineArray[i]);
+			}
+		}
+
+		return retArray;
+
+	}
+	function dotParser(lineArray){
+		var retArray=[];
+		for(var i=0;i<lineArray.length;i++){
+			if((n=lineArray[i].indexOf("."))!=-1){
+				if(n!=0){
+					retArray.push(lineArray[i].substring(0,n));
+				}
+				retArray.push(lineArray[i].substring(n,n+1));
+				if((n+1) != lineArray[i].length){
+					retArray.push(lineArray[i].substring(n+1,lineArray[i].length));
+				}
+
+			} else{
+				retArray.push(lineArray[i]);
+			}
+		}
+
+		return retArray;
+
+	}
+	function mathExpression(lineArray){
+		//case for + / ++
+
+		var retArray=[];
+		for(var i=0;i<lineArray.length;i++){
+			if((n=lineArray[i].indexOf("+"))!=-1){
+				if(n!=0){
+					retArray.push(lineArray[i].substring(0,n));
+				}
+				retArray.push(lineArray[i].substring(n,n+1));
+				if(n+1 !=lineArray[i].length){
+					if(lineArray[i].substring(n+1,n+2)==="+"){
+						retArray.pop();
+						retArray.push("++");
+						if(n+2!=lineArray[i].length){
+							retArray.push(lineArray[i].substring(n+2,lineArray[i].length));
+						}
+					} else{
+						retArray.push(lineArray[i].substring(n+1,lineArray[i].length));
+					}
+				}
+			} else{
+				retArray.push(lineArray[i]);
+			}
+		}
+
+		//case for - / --
+
+		var retArray1=[];
+		for(var i=0;i<retArray.length;i++){
+			if((n=retArray[i].indexOf("-"))!=-1){
+				if(n!=0){
+					retArray1.push(retArray[i].substring(0,n));
+				}
+				retArray1.push(retArray[i].substring(n,n+1));
+				if(n+1 !=retArray[i].length){
+					if(retArray[i].substring(n+1,n+2)==="-"){
+						retArray1.pop();
+						retArray1.push("--");
+						if(n+2!=retArray[i].length){
+							retArray1.push(retArray[i].substring(n+2,retArray[i].length));
+						}
+					} else{
+						retArray1.push(retArray[i].substring(n+1,retArray[i].length));
+					}
+				}
+			} else{
+				retArray1.push(retArray[i]);
+			}
+		}
+
+		//case for *
+
+		var retArray2=[];
+		for(var i=0;i<retArray1.length;i++){
+			if((n=retArray1[i].indexOf("*"))!=-1){
+				if(n!=0){
+					retArray2.push(retArray1[i].substring(0,n));
+				}
+				retArray2.push(retArray1[i].substring(n,n+1));
+				if((n+1) != retArray1[i].length){
+					retArray2.push(retArray1[i].substring(n+1,retArray1[i].length));
+				}
+
+			} else{
+				retArray2.push(retArray1[i]);
+			}
+		}
+
+		//case for /
+
+		var retArray3=[];
+		for(var i=0;i<retArray2.length;i++){
+			if((n=retArray2[i].indexOf("/"))!=-1){
+				if(n!=0){
+					retArray3.push(retArray2[i].substring(0,n));
+				}
+				retArray3.push(retArray2[i].substring(n,n+1));
+				if((n+1) != retArray2[i].length){
+					retArray3.push(retArray2[i].substring(n+1,retArray2[i].length));
+				}
+			} else{
+				retArray3.push(retArray2[i]);
+			}
+		}
+
+		// case for %
+
+		var retArray4=[];
+		for(var i=0;i<retArray3.length;i++){
+			if((n=retArray3[i].indexOf("%"))!=-1){
+				if(n!=0){
+					retArray4.push(retArray3[i].substring(0,n));
+				}
+				retArray4.push(retArray3[i].substring(n,n+1));
+				if((n+1) != retArray3[i].length){
+					retArray4.push(retArray3[i].substring(n+1,retArray3[i].length));
+				}
+			} else{
+				retArray4.push(retArray3[i]);
+			}
+		}
+
+		return retArray4;
+
+
+	}
+
+	function semicolonM(lineArray){
+		var retArray=[];
+		//for(int i=0;i<x;i++)
+		for(var i=0;i<lineArray.length;i++){
+			if(i==lineArray.length-1){
+				retArray.push(lineArray[i]);
+			}
+			else if((n=lineArray[i].indexOf(";"))!=-1){
+				if(n!=0){
+					retArray.push(lineArray[i].substring(0,n));
+				}
+				retArray.push(lineArray[i].substring(n,n+1));
+				if(n+1!=lineArray[i].length){
+					retArray.push(lineArray[i].substring(n+1,lineArray[i].length));
+				}
+			} else{
+				retArray.push(lineArray[i]);
+			}
+		}
+		return retArray;
+	}
+
+
+
+	function semicolon(lineArray){
+		if((n=lineArray[lineArray.length-1].indexOf(";"))!=-1){
+			if(n==0){
+				lineArray.pop();
+			} else{
+				lineArray[lineArray.length-1]=lineArray[lineArray.length-1].replace(";","");
+			}
+		}
+		return lineArray;
+		
+	}
+	function inequalityStatement(lineArray){
+		// = and == sign case
+		var retArray=[];
+
+		for(var i=0;i<lineArray.length;i++){
+			if((n=lineArray[i].indexOf("="))!=-1){
+				if(n!=0){
+					retArray.push(lineArray[i].substring(0,n));
+				}
+				retArray.push(lineArray[i].substring(n,n+1));
+				if(n+1 !=lineArray[i].length){
+
+					if(lineArray[i].substring(n+1,n+2)==="="){
+						retArray.pop();
+						retArray.push("==");
+						if(n+2!=lineArray[i].length){
+							retArray.push(lineArray[i].substring(n+2,lineArray[i].length));
+						}
+					} else{
+						retArray.push(lineArray[i].substring(n+1,lineArray[i].length));
+					}
+
+				}
+			} else{
+				retArray.push(lineArray[i]);
+			}
+
+		}
+		var retArray1=[];
+
+		// < sign case
+		for(var i=0;i<retArray.length;i++){
+			if((n=retArray[i].indexOf("<"))!=-1){
+				if(n!=0){
+					retArray1.push(retArray[i].substring(0,n));
+				}
+				retArray1.push(retArray[i].substring(n,n+1));
+				if((n+1) != retArray[i].length){
+					retArray1.push(retArray[i].substring(n+1,retArray[i].length));
+				}
+
+			} else{
+				retArray1.push(retArray[i]);
+			}
+		}
+		// > sign case 
+
+		var retArray2=[];
+
+		for(var i=0;i<retArray1.length;i++){
+			if((n=retArray1[i].indexOf(">"))!=-1){
+				if(n!=0){
+					retArray2.push(retArray1[i].substring(0,n));
+				}
+				retArray2.push(retArray1[i].substring(n,n+1));
+				if((n+1) != retArray1[i].length){
+					retArray2.push(retArray1[i].substring(n+1,retArray1[i].length));
+				}
+
+			} else{
+				retArray2.push(retArray1[i]);
+			}
+		}
+
+		var retArray3=[];
+
+		for(var i=0;i<retArray2.length;i++){
+			if((n=retArray2[i].indexOf("!"))!=-1){
+				if(n!=0){
+					retArray3.push(retArray2[i].substring(0,n));
+				}
+				retArray3.push(retArray2[i].substring(n,n+1));
+				if((n+1) != retArray2[i].length){
+					retArray3.push(retArray2[i].substring(n+1,retArray2[i].length));
+				}
+
+			} else{
+				retArray3.push(retArray2[i]);
+			}
+		}
+
+
+
+		return retArray3;
+	}
+
+	function isValid(str){
+	 return !/[~`!#$%\^&*+=\-\[\]\\';,/{}|\\":<>\?]/g.test(str);
+	}
+
 </script>
 </body>
 </html>
