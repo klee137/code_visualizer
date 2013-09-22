@@ -49,6 +49,18 @@ function send(current){
     }
 }
 
+
+//vars = ["int", "x", "=", "0"]
+function magic(vars){
+
+    return {
+        "primitives": [{"name": "x", "value": "0"}],
+        "objects": [],
+        "relations": []
+    }
+}
+
+
 function findRefs(vars){
 
 }
@@ -156,8 +168,8 @@ function start(){
 
     node.append("rect")
         .attr("class", "node")
-        .attr("height", 20)
-        .attr("width", 20)
+        .attr("height", 50)
+        .attr("width", 50)
         .style("fill", function(d) { return color(d.group); })
         .attr("id", function(d){ return d.name })
         .on("click", function(d) {
@@ -227,12 +239,12 @@ function fillGraph(vars){
     if (isPrimitive){
         shtml += "<li class='shelfItem'>"
         + name
-        + "<br><div class=''>"+value+"</div>"
+        + "<div class='box'>"+value+"</div>"
         + "</li>";
     } else {
         shtml += "<li class='shelfItem'>"
         + name
-        + "<br><div class=''>"+value+"</div>"
+        + "<div class='dot'>"+value+"</div>"
         + "</li>";
     }
 

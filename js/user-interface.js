@@ -45,10 +45,10 @@ $('textarea').blur(function(){
 // 	//$('.shelfLeft, .shelfRight').css("background-color", "gainsboro")
 // })
 $('.shelfLeft').click(function(){
-	$('.shelf').animate( { scrollLeft: '-=250' }, 200 );
+	$('#shelfList').animate( { scrollLeft: '-=250' }, 200 );
 })
 $('.shelfRight').click(function(){
-	$('.shelf').animate( { scrollLeft: '+=250' }, 200 );
+	$('#shelfList').animate( { scrollLeft: '+=250' }, 200 );
 })
 
 
