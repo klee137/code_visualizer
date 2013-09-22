@@ -1,4 +1,16 @@
 
+
+//vars = ["int", "x", "=", "0"]
+function magic(vars){
+
+    return {
+        "primitives": [{"name": "x", "value": "0"}],
+        "objects": [],
+        "relations": []
+    }
+}
+
+
 function findRefs(vars){
 
 }
@@ -103,8 +115,8 @@ function start(){
 
     node.append("rect")
         .attr("class", "node")
-        .attr("width", 120)
-        .attr("height", 120)
+        .attr("height", 50)
+        .attr("width", 50)
         .style("fill", function(d) { return color(d.group); })
         .attr("id", function(d){ return d.name })
         .on("click", function(d) {
@@ -117,8 +129,8 @@ function start(){
         
 
     node.append("text")
-        .attr("dx", 12)
-        .attr("dy", ".05em")
+        .attr("dx", 25)
+        .attr("dy", "-1.0em")
         .text(function(d) { return d.name })
         
 
