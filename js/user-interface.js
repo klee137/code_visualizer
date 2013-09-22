@@ -58,6 +58,25 @@ $('.shelf').on('click', '.shelfItem', function(){
 	//$('#detail').hide().fadeIn();
 	$('#detail').modal('toggle');
 
+	var name = $(this).find(".classLabel").text().trim();
+	var item = vstorage[name];
+
+	var newHtml = "";
+	for (var p in item){
+		if (item.hasOwnProperty(p)){
+			if (p == 0){
+				newHtml += "<dt>value</dt>"
+				+ "<dd>"+item[p]+"</dd>"
+			} else {
+				newHtml += "<dt>"+p+"</dt>"
+				+ "<dd>"+item[p]+"</dd>"
+			}
+			
+		}
+	}
+
+	$('#detailList').html(newHtml);
+
 })
 
 //displaying sets on space
@@ -109,6 +128,38 @@ $('.set').click(function(){
 	$('.cover').fadeOut();
 
 	playNote();
+});
+$('.set').hover(function(){
+
+	var self = this;
+	var label = $(self).text().trim();
+	console.log(label)
+	if (label == "Code"){
+		$('#coverDetails').text("The Mind Projector is a visual code explorer made for MHacks Fall 2013.");
+	} else if (label == "Paste"){
+		$('#coverDetails').text("Paste your code.  Let us take care of it.  We're experts");
+	} else if (label == "Upload"){
+		$('#coverDetails').text("You left your code at home?!  Fine.  Just get it quickly.");
+	} else if (label == "Stats"){
+		var code = $('textarea').val().trim();
+		var fors = (code.match(/for/g) || []).length;
+		var ifs = (code.match(/if/g) || []).length;
+		var whiles = (code.match(/while/g) || []).length;
+		var classes = (code.match(/class/g) || []).length;
+		var lines = $('textarea').val().trim().split('\n');
+		lines = lines || [""];
+		lines = lines.length - 1;
+
+		var shtml = "Your code looks good. "+"<h1>"+lines+"</h1> wonderful lines";
+		shtml += (fors > 0)? ("<br><h2>"+fors+"</h2> great for loops") : "";
+		shtml += (ifs > 0)? ("<br><h2>"+ifs+"</h2> neat if statements") : "";
+		shtml += (whiles > 0)? ("<br><h2>"+whiles+"</h2> while loops") : "";
+		shtml += (classes > 0)? ("<br><h2>"+classes+"</h2> amazing classes") : "";
+
+		$('#coverDetails').html(shtml);
+	} else if (label == "Run"){
+		$('#coverDetails').text("Experience the magic.");
+	}
 });
 
 var context = new webkitAudioContext();

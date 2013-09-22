@@ -10,7 +10,7 @@ function send(current){
 
     if(current[0].primitive()!=""){
 
-        primitives["type"] = current[0].primitives();
+        primitives["type"] = current[0].primitive();
         primitives["name"] = current[1];
         if(current[2]=="="){
             primitives["value"]=current[3];
@@ -24,21 +24,32 @@ function send(current){
         vstorage[primitives["name"]]=primitives["value"];
     }
     else if(built_in.indexOf(current[0])!=-1 && current.indexOf("new")!=-1){
+        
         objects["type"] = current[0];
         objects["name"] = current[1];
 
         //built-in function
         if(objects["type"]=="int[]"){
-            objects["capacity"] = current[current.indexOf("new")+3];
+            alert(current);
+            c= current[current.length-1].substring(current[current.length-1].indexOf("[")+1,current[current.length-1].indexOf("]"));
+            objects["capacity"] = c;
         }  
+        vstorage[objects["name"]]=objects;
         //non built-in function
     }
     else if(current[0] in vstorage){
         //primitives
-        if(!NaN(n=vstorage[current[0]]) || n==true || n==false){
-            if(vstorage[current[2]] in vstorage){
+        console.log("..");
+        n=vstorage[current[0]];
+        console.log(n);
+        if(!isNaN(n) || n==true || n==false){
+            console.log("testing");
+            console.log(vstorage[current[2]]);
+            if(current[2] in vstorage){
+                console.log("?");
                 eval(vstorage[current[0]]=vstorage[current[2]]);
             } else{
+                console.log(vstorage[current[0]]+"="+current[2]);
                 eval(vstorage[current[0]]=current[2]);
             }
         }
@@ -78,12 +89,6 @@ function print(text){
     $('#console').append("<br>"+text);
 }
 
-//var exists = [...]
-
-
-function findRefs(vars){
-
-}
 
 function arrow(s, t){
     var link = {source: s, target: t, type: "link"};
@@ -125,9 +130,39 @@ function round(numstring, cutoff){
 
 
 function visualize(vars, references) {
-    //clear 
-    fillGraph(vars);
-    start()
+    //clear
+    var data = send(vars);
+    var p = data["primitives"];
+    var obj = data["objects"];
+    var rel = data["relations"];
+
+    //add primitive if needed
+    if (!$.isEmptyObject(p)){
+        fillGraph(p);
+    }
+    if (!$.isEmptyObject(obj)){
+        fillGraph(obj);
+    }
+    if (rel.length > 0){
+        for (var r=0; r<rel.length; r++){
+            var relation = rel[r];
+            graph.links.push(relation);
+        }
+    }
+
+    //update the shelf
+    var items = $('.shelfItem', '#shelfList');
+    for (var i=0; i<items.length; i++){
+        var item = $(items[i]);
+        var name = item.find(".classLabel").text().trim();
+        var newValue = vstorage[name];
+
+        if (typeof newValue != "object"){
+            item.find(".value").text(newValue);
+        }
+    }
+
+    start();
 }
 
 
@@ -289,21 +324,15 @@ graph.links = links;
 
 
 //takes an array of pieces
-function fillGraph(data){
-//     var p = data["primitives"];
-//     var obj = data["objects"];
-//     var rel = data["relations"];
-// console.log(data)
-    var vars = data;
-
+function fillGraph(vars){
 
     var shtml = $('#shelfList').html();
     var node;
 
-    var type = vars[0];
-    var name = round(vars[1], 10);
-    var value = round(vars[3], 10);
-    var isPrimitive = (type.primitive != "")? 1: 0;
+    var type = vars['type'];
+    var name = round(vars['name'], 10);
+    var value = round(vars['value'], 10);
+    var isPrimitive = (type.primitive() != "")? 1: 0;
 
     node = {
         "name": name,
@@ -315,12 +344,12 @@ function fillGraph(data){
     if (isPrimitive){
         shtml += "<li class='shelfItem'>"
         + "<div class='classLabel'>"+name+"</div>"
-        + "<div class='box'>"+value+"</div>"
+        + "<div class='box value'>"+value+"</div>"
         + "</li>";
     } else {
         shtml += "<li class='shelfItem'>"
         + "<div class='classLabel'>"+name+"</div>"
-        + "<div class='dot'>"+value+"</div>"
+        + "<div class='dot value'></div>"
         + "</li>";
     }
 

@@ -32,7 +32,11 @@
 		Run
 	</li>
 </ul>
-<div class="cover"></div>
+<div class="cover">
+	<div id="coverDetails">
+		Hover over an option to see details.
+	</div>
+</div>
 <nav class='left'>
 
 	<button class='btn btn-default' id='zoomin' onClick='zoomin()'>+</button><br><br>
@@ -76,14 +80,10 @@
 </section>
 <textarea class='code'>
 int x = 5;
-int x = 5;
-int x = 5;
-int x = 5;
-int x = 5;
-int x = 5;
-int x = 5;
-int x = 5;
-int x = 5;
+x = 4;
+int y = 0;
+y = x;
+int[] iarray = new int[10];
 </textarea>
 
 <div class="svgBox">
@@ -235,7 +235,8 @@ int x = 5;
 	$('#nextLine').click(function(){
 		if (lineI < lines.length){
 			go(lineI);
-	    	lineI+=1;
+	    	lineI++;
+	    	
 		}
 	});
 
@@ -258,6 +259,7 @@ int x = 5;
 	var lines =$('textarea').val().trim().split('\n');
 	var ostorage, storage, testClass, testArray;
 	function go(i){
+		 lines=$('textarea').val().trim().split('\n');
 
 		//SUPER VARIABLES
 		ostorage ={
@@ -266,15 +268,16 @@ int x = 5;
 		
 		storage=[];
 
-
 		// BEGINNING OF THE PROGRAM
 		//analyze the ith line in textarea, increment on clicking next line btn
 		var temp = lines[i].trim();
+
+		print(temp);
 		if(temp.length >= 1){
 			var x = parser(temp)
 			storage.push(parser(temp));
 
-			visualize(x, findRefs(x));
+			visualize(x);
 
 			testClass = classOrganizer(storage);
 
@@ -282,20 +285,23 @@ int x = 5;
 				//testClass.mstorage[i].content_lines = if_block(testClass.mstorage[i].content_lines,testClass.mstorage[i].vstorage);
 			}
 
-
 			//testing area
 
-			console.log("name");
-			console.log(testClass.name);
-			console.log("import storage");
-			console.log(testClass.impStore);
-			console.log("method storage");
-			console.log(testClass.mstorage[0].visibility_type +" "+testClass.mstorage[0].is_static +" "+testClass.mstorage[0].return_type+" "+testClass.mstorage[0].method_name);
-			testArray = testClass.mstorage[0].content_lines;
-			for(var i=0;i<testArray.length;i++){
-				console.log(testArray[i]);
-			}
+			// console.log("name");
+			// console.log(testClass.name);
+			// console.log("import storage");
+			// console.log(testClass.impStore);
+			// console.log("method storage");
+			// console.log(testClass.mstorage[0].visibility_type +" "+testClass.mstorage[0].is_static +" "+testClass.mstorage[0].return_type+" "+testClass.mstorage[0].method_name);
+
+			// testArray = testClass.mstorage[0].content_lines;
+
+			// for(var i=0;i<testArray.length;i++){
+			// 	console.log(testArray[i]);
+			// }
+
 		} 
+
 	}
 
 
