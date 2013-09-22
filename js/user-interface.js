@@ -66,6 +66,9 @@ $('.shelf').on('click', '.shelfItem', function(){
 
 	var name = $(this).find(".classLabel").text().trim();
 	var item = vstorage[name];
+	var type;
+	console.log("*****************");
+	console.log(item);
 
 	var newHtml = "";
 	for (var p in item){
@@ -80,7 +83,12 @@ $('.shelf').on('click', '.shelfItem', function(){
 			
 		}
 	}
-
+	if(!isNaN(item) || item ==true || item == false){
+		type="primitive";
+	} else{
+		type="object";
+	}
+	$('.modal-title').text("name: "+name +" ("+type+")");
 	$('#detailList').html(newHtml);
 
 })
