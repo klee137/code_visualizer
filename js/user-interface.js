@@ -25,6 +25,12 @@ $(document).keyup(function(e){
 		go(0);
 		playNote();
 	}
+	if(e.keyCode==78 && $("textarea").css('display')==="none"){
+		if (lineI < lines.length){
+			go(lineI);
+	    	lineI++;
+		}
+	}
 })
 
 
@@ -94,6 +100,67 @@ $(document).on('keyup', function(e){
 		});
 		playNote();
 	}
+	// down button for the menu
+	else if(e.keyCode == 40 && $('.code').css('display')=="none"){
+		var name = $('.chosen').text().trim();
+		var curr = $('.chosen');
+		if(name !="Run"){
+			curr.next().addClass('chosen');
+			curr.removeClass('chosen');
+			labels($('.chosen').text().trim());
+		}
+		playNote();
+	}
+	// up button for the menu
+	else if(e.keyCode == 38 && $('.code').css('display')=="none"){
+		var curr = $('.chosen');
+		var name = $('.chosen').text().trim();
+		if(name !="Code"){
+			curr.prev().addClass('chosen');
+			curr.removeClass('chosen');
+			labels($('.chosen').text().trim());
+		}
+		playNote();
+	}
+	//enter key to hit enter
+	else if(e.keyCode ==13 && $('.cover').css('display')=="block"){
+		if($('.chosen').text().trim()=="Code"){
+
+		}
+		else if($('.chosen').text().trim()=="Paste"){
+			$("textarea").slideToggle(200);
+		}
+		else if($('.chosen').text().trim()=="Upload"){
+			uploadFile();
+			$('#setList').slideToggle(150);
+			$('.cover').fadeToggle(150, function(){
+				if (!cover){
+					$('.svgBox').addClass('blur');
+				} else {
+					$('.svgBox').removeClass('blur');
+				}
+				cover = !cover;
+			});
+
+		}
+		else if($('.chosen').text().trim()=="Stats"){
+
+		}
+		else if($('.chosen').text().trim()=="Run"){
+			run(lineI,lines.length);
+			$('#setList').slideToggle(150);
+			$('.cover').fadeToggle(150, function(){
+				if (!cover){
+					$('.svgBox').addClass('blur');
+				} else {
+					$('.svgBox').removeClass('blur');
+				}
+				cover = !cover;
+			});
+
+		}
+	}
+
 });
 $('#settings, .cover').on('click', function(){
 	if ($('.code').css('display') == "none"){
@@ -133,7 +200,26 @@ $('.set').hover(function(){
 
 	var self = this;
 	var label = $(self).text().trim();
-	console.log(label)
+	labels(label);
+	
+});
+
+var context = new webkitAudioContext();
+
+function run(LineI,endlength){
+	setTimeout(function(){
+		go(LineI);
+		LineI++;
+
+		if(LineI<endlength){
+			run(LineI,endlength);
+		}
+
+	},250)
+}
+
+
+function labels(label){
 	if (label == "Code"){
 		$('#coverDetails').text("The Mind Projector is a visual code explorer made for MHacks Fall 2013.");
 	} else if (label == "Paste"){
@@ -160,9 +246,9 @@ $('.set').hover(function(){
 	} else if (label == "Run"){
 		$('#coverDetails').text("Experience the magic.");
 	}
-});
 
-var context = new webkitAudioContext();
+
+}
 function playNote(){
 	
 	var	oscillator = context.createOscillator(); // Oscillator defaults to sine wave

@@ -45,6 +45,9 @@ function send(current){
     else if(current[0] in vstorage || current[0].substring(0,current[0].indexOf("[")) in vstorage){
         //primitives
         n=vstorage[current[0]]; 
+        if(current[0].indexOf("[")!=-1){
+            n = vstorage[current[0].substring(0,current[0].indexOf("["))];
+        }
         if(!isNaN(n) || n==true || n==false){
             if(current[2] in vstorage){
                 eval(vstorage[current[0]]=vstorage[current[2]]);
@@ -55,12 +58,27 @@ function send(current){
         }
         //objects
         else{ 
-            var bracketDist = current.indexOf("]") - current.indexOf("[");
-            var arr = current.join("").substring(0, current.indexOf("[")).trim();
-            if(bracketDist != 0 && bracketDist != 1){
-                console.log( current.join("").replace(new RegExp("/"+arr+"/g"), "vstorage["+arr+"].content") )
-                eval(current.join("").replace(new RegExp("/"+arr+"/g"), "vstorage["+arr+"].content"));
-            } else{
+            var arr = current.join("").substring(0, current.join("").indexOf("[")).trim();
+            var index = current.join("").substring(current.join("").indexOf("[")+1,current.join("").indexOf("]")).trim();
+            console.log(arr);
+            console.log(index);
+            if(current.indexOf("new") == -1){
+              var temp= vstorage[arr].content;
+              var number = current[current.length-1];
+              if(isNaN(number)){
+                var arr1 = current[current.indexOf("=")+1];
+                arr1_name = arr1.substring(0,arr1.indexOf("["));
+                arr1_index = arr1.substring(arr1.indexOf("[")+1,arr1.indexOf("]"));
+                number = vstorage[arr1_name].content[arr1_index]; //array case
+
+              }
+              temp[index] = number;
+              vstorage[arr].content=temp;
+            } 
+            else if(current.indexOf("new") != -1){
+                //not do anything
+            }
+            else{
                 relations.push(current[0]);
                 relations.push(current[2]);
                 // 1 --> 2                
