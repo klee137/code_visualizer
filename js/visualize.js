@@ -1,7 +1,9 @@
 var vstorage ={};
+var built_in =["int[]"];
+
 function send(current){
 
-        var objects =[];
+        var objects ={};
         var relations =[];
         var primitives= {} ;
         var indicator="NA";
@@ -21,8 +23,15 @@ function send(current){
         }
         vstorage[primitives["name"]]=primitives["value"];
     }
-    else if(classObject){
+    else if(built_in.indexOf(current[0])!=-1 && current.indexOf("new")!=-1){
+        objects["type"] = current[0];
+        objects["name"] = current[1];
 
+        //built-in function
+        if(objects["type"]=="int[]"){
+            objects["capacity"] = current[current.indexOf("new")+3];
+        }  
+        //non built-in function
     }
     else if(current[0] in vstorage){
         //primitives
