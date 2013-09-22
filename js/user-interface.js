@@ -15,6 +15,19 @@ function uploadFile(){
 	);
 }
 
+//hotkey 
+$(document).keyup(function(e){
+	if(e.keyCode==80 && $("textarea").css('display')==="none"){
+		$("textarea").slideToggle(200);
+	}
+	if(e.keyCode==82 && $("textarea").css('display')==="none"){
+		go();
+	}
+})
+
+
+
+
 //open close the paste area
 $('#pasteBtn').click(function(){
 	$("textarea").slideToggle(200);

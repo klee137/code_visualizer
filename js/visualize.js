@@ -101,9 +101,10 @@ function start(){
         .data(graph.nodes)
       .enter().append("g");
 
-    node.append("circle")
+    node.append("rect")
         .attr("class", "node")
-        .attr("r", 7)
+        .attr("height", 20)
+        .attr("width", 20)
         .style("fill", function(d) { return color(d.group); })
         .attr("id", function(d){ return d.name })
         .on("click", function(d) {
