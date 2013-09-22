@@ -101,9 +101,10 @@ function start(){
         .data(graph.nodes)
       .enter().append("g");
 
-    node.append("circle")
+    node.append("rect")
         .attr("class", "node")
-        .attr("r", 7)
+        .attr("width", 120)
+        .attr("height", 120)
         .style("fill", function(d) { return color(d.group); })
         .attr("id", function(d){ return d.name })
         .on("click", function(d) {
@@ -117,7 +118,7 @@ function start(){
 
     node.append("text")
         .attr("dx", 12)
-        .attr("dy", ".35em")
+        .attr("dy", ".05em")
         .text(function(d) { return d.name })
         
 
@@ -173,12 +174,12 @@ function fillGraph(vars){
     if (isPrimitive){
         shtml += "<li class='shelfItem'>"
         + name
-        + "<br><div class=''>"+value+"</div>"
+        + "<div class='box'>"+value+"</div>"
         + "</li>";
     } else {
         shtml += "<li class='shelfItem'>"
         + name
-        + "<br><div class=''>"+value+"</div>"
+        + "<div class='dot'>"+value+"</div>"
         + "</li>";
     }
 
