@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<!-- These are like the include files in C/Java.  They import stuff -->
+	<script src="js/jquery-latest.js"></script>
+	<script type="text/javascript" src="http://api.filepicker.io/v1/filepicker.js"></script>
+	<script src="http://www.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+	<link href="http://www.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet">
+	<link href="css/style.css" rel="stylesheet">
+	<script src="js/spot.js"></script>
+	<script src="http://d3js.org/d3.v3.min.js"></script>
+	<script src="js/visualize.js"></script>
+	<script src="js/three.min.js"></script>
+	<script src="js/helvetiker.js"></script>
+	<script src="js/navigation.js"></script>
+	
+</head>
+
+<body style="margin:0">
+<!-- These are elements on the page like buttons and containers -->
+<ul id="setList">
+	<li class="set chosen">
+		Code
+	</li>
+	<li class="set" id="pasteBtn">
+		Paste
+	</li>
+	<li class="set" onClick="uploadFile()">
+		Upload
+	</li>
+	<li class="set">
+		Stats
+	</li>
+	<li class="set" onClick='go(0)'>
+		Run
+	</li>
+</ul>
+<div class="cover">
+	<div id="coverDetails">
+		Hover over an option to see details.
+	</div>
+</div>
+<nav class='left'>
+
+	<button class='btn btn-default' id='zoomin' onClick='zoomin()'>+</button><br><br>
+	<button class='btn btn-default' id='zoomout' onClick='zoomout()'>-</button><br><br>
+
+	<button class='btn btn-default' id="settings">
+		<span class="glyphicon glyphicon-cog menuBtn"></span>
+	</button>
+	
+	<!-- <div class="btn-group">
+	  <button class='btn btn-primary' id='runBtn' onClick='start()'>
+	  	<span class="glyphicon glyphicon-play"></span>
+	  </button>	
+	  <button type="button" class="btn btn-danger dropdown-toggle" data-toggle="dropdown">
+	    <span class="caret"></span>
+	  </button>
+	  <ul class="dropdown-menu" role="menu">
+	    <li><a href="#" onClick='uploadFile()'>Upload</a></li>
+	    <li><a href="#" onClick=''>Paste</a></li>
+	  </ul>
+	</div>
+ -->
+	<!--
+	<button class='btn btn-primary menuBtn' id='uploadBtn' onClick='uploadFile()'>Upload</button><br><br>
+	<button class='btn btn-primary menuBtn' id='pasteBtn'>Paste</button><br><br>
+	<button class='btn btn-primary menuBtn' id='runBtn' onClick='start()'>Run!</button>	
+-->
+</nav>
+<section class='shelf'>
+	<div id='shelfList'>
+		<!--
+		<li class='shelfItem'>
+			Test1
+		</li>
+		<li class='shelfItem'>
+			Test1
+		</li>-->
+	</div>
+	<i class="glyphicon glyphicon-chevron-left shelfLeft"></i>
+	<i class="glyphicon glyphicon-chevron-right shelfRight"></i>
+</section>
+<textarea class='code'>
+int x = 5;
+x = 4;
+int y = 0;
+y = x;
+int[] iarray = new int[10];
+</textarea>
+
+<div class="svgBox">
+	<svg id='view'></svg>
+</div>
+<div id="container"></div>
+
+<div id="magicBtn">M</div>
+<div id="console" class='lead'>
+	<!--console &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-->
+</div>
+<div id="rightMenu">
+	<div id="nextLine" class='btn btn-success'>Next Line</div>
+	<div id="resetBtn" onClick='reset()' class='btn btn-warning'>Reset</div>
+</div>
+
+<h1 id="title" style="width:100%; text-align:center; top:30%; position:absolute">CODE VISUALIZER</h1>
+
+
+<div class="modal fade" id="detail">
+  <div class="modal-dialog" style="width:90%">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">Object Name</h4>
+      </div>
+      <div class="modal-body">
+        <div id="objectDetail"></div>
+			<blockquote id="detailPane" class="lead">
+				<p>Sleepy Alex is asleep.  Is Alex asleep, or is Alex asleep?  Has he entered the Matrix?  If so, he might be stuck.  What is real?</p>
+				<dl class="dl-horizontal" id="detailList">
+				  <dt>name</dt>
+				  	<dd>...</dd>
+				  <dt>value</dt>
+				  	<dd>...</dd>
+				  <dt>references</dt>
+				  	<dd>...</dd>
+				</dl>
+			</blockquote>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+<!--
+<div id="detail">
+	<div id="closeDetail"></div>
+	<div id="objectDetail"></div>
+	<blockquote id="detailPane" class="lead">
+		<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.</p>
+		<dl class="dl-horizontal" id="detailList">
+		  <dt>name</dt>
+		  	<dd>...</dd>
+		  <dt>value</dt>
+		  	<dd>...</dd>
+		  <dt>references</dt>
+		  	<dd>...</dd>
+		</dl>
+	</blockquote>
+</div>
+-->
+
+<!-- ACTUAL CODE STUFF -->
+<script src="js/user-interface.js"></script>
+<script>
+
+	var camera, scene, renderer;
+	var geometry, material, mesh, sphere;
+
+	camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 15000 );
+	camera.position.z = 1000;
+
+	scene = new THREE.Scene();
+
+//Modelling
+	//plane size
+	var size = 2000;
+	//box size
+	var bsize = 20;
+	
+	geometry = new THREE.CubeGeometry( bsize, bsize, bsize );
+	material = new THREE.MeshLambertMaterial( { color: 0xE01BE0 } );
+	
+	var boxes = new Array();
+	function addBox(color){
+		color = color || "rgb("+Math.floor(Math.random()*255)+","+Math.floor(Math.random()*255)+","+Math.floor(Math.random()*255)+")";
+		var mesh = new THREE.Mesh( geometry, material.clone() );
+		mesh.position.x = Math.random()*size-(size/2);
+		mesh.position.z = Math.random()*size-(size/2);
+		scene.add( mesh );
+		
+		boxes.push(mesh);
+
+		mesh.material.color = color;
+	}
+
+	$('#nextLine').click(function(){
+		addBox();
+		playNote();
+	});
+	
+//Lighting
+	var pointLight = new THREE.PointLight(0xE01BE0);
+	pointLight.position.x = 10;
+	pointLight.position.y = 350;
+	pointLight.position.z = 130;
+	
+	scene.add(pointLight);
+	
+	
+	renderer = new THREE.WebGLRenderer();
+	renderer.setSize( window.innerWidth, window.innerHeight );
+	renderer.shadowMapEnabled = true;
+	document.body.appendChild( renderer.domElement );
+
+	for (b in boxes){
+		boxes[b].rotation.y = Math.random();
+		boxes[b].position.y = -2000*Math.random();
+		boxes[b].geometry.verticesNeedUpdate = true
+		boxes[b].geometry.elementsNeedUpdate = true
+		boxes[b].geometry.dynamic = true;
+		boxes[b].matrixWorldNeedsUpdate = true;
+		boxes[b].matrixAutoUpdate = true;
+		boxes[b].geometry.normalsNeedUpdate = true;
+		boxes[b].geometry.morphTargetsNeedUpdate=true;
+		boxes[b].geometry.uvsNeedUpdate=true;
+		boxes[b].geometry.colorsNeedUpdate=true;
+		boxes[b].geometry.tangentsNeedUpdate=true;
+	}
+	camera.rotation.x = -0.5;
+	camera.position.y = 500;
+
+
+//Intro
+	var all = $('.left, .shelf, #rightMenu').hide();
+	$('#title').hide();
+	var boxN = 0;
+	function grow(){
+		if (boxN < 150){
+			setTimeout(function(){
+				boxN++;
+				addBox();
+				grow();
+			}, 15);
+		} else {
+			$('#title').fadeIn(2000, function(){
+				all.fadeIn(function(){
+					$('#title').fadeOut(1000, function(){
+						$('canvas').fadeOut(1000);
+					});
+				});
+			});		
+		}
+	};
+	grow();
+	
+
+
+	//end intro
+
+	animate();
+	function animate() {
+		requestAnimationFrame( animate );
+
+		//rotate the box and sphere
+		for (b in boxes){
+			if (boxes.hasOwnProperty(b)){
+				boxes[b].position.y += 10;
+				//boxes[b].geometry.height += 2;
+				boxes[b].material.opacity -= 0.002;
+				boxes[b].rotation.y += 0.02;
+				
+				if (boxes[b].position.y > 700){
+					boxes[b].position.y = -1500;
+					boxes[b].material.opacity = 1;
+				}
+			}
+		}
+		
+		//makes the camera move based on the arrow keys
+		//putting changes in the animate() makes it more responsive
+		camera.position.z -= zc*15;
+		camera.position.x -= xc*15;
+		camera.position.y += yc*15;
+		camera.rotation.y += yr;
+		
+		renderer.render( scene, camera );
+
+	}
+
+
+	Array.prototype.visibility = function( ){
+		if(this.indexOf("public")!=-1){
+			return "public";
+		}
+		else if(this.indexOf("private")!=-1){
+			return "private";
+		}
+		else if(this.indexOf("protected")!=-1){
+			return "protected";
+		}
+		else{
+			return "default";
+		}
+
+	}
+	String.prototype.primitive = function(){
+		if(this =="int"){
+			return "int";
+		}
+		else if(this =="char"){
+			return "char";
+		}
+		else if(this =="boolean"){
+			return "boolean";
+		}
+		else if(this =="float"){
+			return "float";
+		}
+		else if(this =="short"){
+			return "short";
+		}
+		else if(this =="long"){
+			return "long";
+		}
+		else if(this =="byte"){
+			return "byte";
+		}
+		else if(this =="double"){
+			return "double";
+		} else{
+			return "";
+
+		}
+
+	}
+
+	//VARIABLES 
+	function variable(){
+		this.type;
+		this.value=0;
+		this.is_static = false;
+		this.visibility_type = "default";
+	}
+
+
+	function classStorage(){
+		this.name ="NA"; 
+		this.visibility;
+		this.impStore = []; //stores import storage
+		this.vstorage = {};	//stores variable storage
+		this.mstorage = []; //stores method storage
+		this.pstorage = []; //stores private class
+	}
+
+	function method(){
+		this.visibility_type = "default";
+		this.is_static = false;
+		this.return_type;
+		this.method_name;
+		this.vstorage = {};
+		this.args = [];
+		this.content_lines =[];
+	}
+
+
+
+
+	var lineI = 0;
+	//next Line clicking
+	$('#nextLine').click(function(){
+		if (lineI < lines.length){
+			go(lineI);
+	    	lineI++;
+
+		}
+	});
+
+	//reset initial conditions
+	function reset(){
+		//empty graph
+	    graph = {
+	        "nodes": [],
+	        "links": [],
+	    }
+	    
+	    $('svg').empty();
+	    $('#shelfList').html("");
+
+	    lineI = 0;
+	}
+	reset();
+
+
+	var lines =$('textarea').val().trim().split('\n');
+	var ostorage, storage, testClass, testArray;
+	function go(i){
+		 lines=$('textarea').val().trim().split('\n');
+
+		//SUPER VARIABLES
+		ostorage ={
+			'objValue' : {}
+		}
+		
+		storage=[];
+
+		// BEGINNING OF THE PROGRAM
+		//analyze the ith line in textarea, increment on clicking next line btn
+		var temp = lines[i].trim();
+
+		print(temp);
+		if(temp.length >= 1){
+			var x = parser(temp)
+			storage.push(parser(temp));
+
+			visualize(x);
+
+			testClass = classOrganizer(storage);
+
+			for(var i=0;i<testClass.mstorage.length;i++){
+				//testClass.mstorage[i].content_lines = if_block(testClass.mstorage[i].content_lines,testClass.mstorage[i].vstorage);
+			}
+
+			//testing area
+
+			// console.log("name");
+			// console.log(testClass.name);
+			// console.log("import storage");
+			// console.log(testClass.impStore);
+			// console.log("method storage");
+			// console.log(testClass.mstorage[0].visibility_type +" "+testClass.mstorage[0].is_static +" "+testClass.mstorage[0].return_type+" "+testClass.mstorage[0].method_name);
+
+			// testArray = testClass.mstorage[0].content_lines;
+
+			// for(var i=0;i<testArray.length;i++){
+			// 	console.log(testArray[i]);
+			// }
+
+		} 
+
+	}
+
+
+
+
+
+
+	//output: array of lines without if statement
+//make new array_lines, but don't add the if statements, making the new array_lines concise
+//ONLY add the if statements whose conditions are true, without the if(){}
+	function if_block(array_lines,vstorage){
+		var start_index =[];
+		var end_index =[];
+		var exclude_start =[];
+		var exclude_end =[];
+		var temp1=0;
+		var statement;
+		var return_lines =[];
+
+		for(var a=0; a<array_lines.length; a++){
+			for(var b=0; b<array_lines[a].length; b++){
+				if(array_lines[a][b]==="if"){
+					start_index.push(a);
+				}
+			}
+		}
+
+		for(var a=0; a<start_index.length; a++){
+			temp1=1; //starts at 1 because if line contains open bracket
+			for(var b=start_index[a]+1; b<start_index.length; b++){
+				for(var c=0; c<array_lines[b].length; c++){
+					if(array_lines[b][c]==="{"){
+						temp1++;
+					}else if(array_lines[b][c]==="}"){
+						temp1--;
+					}
+					if(temp1==0){
+						end_index.push(b);
+					}
+				}
+			}
+		}
+
+		for(var a=0; a<start_index.length; a++){
+			temp1 = start_index[a];
+			statement = "";
+			
+			for(var b=2; array_lines[temp1][b]!==")"; b++){ //b=2 because first two elements are "if" and "("
+				if(isNaN(array_lines[temp1][b]) && isValid(array_lines[temp1][b])){
+					eval(array_lines[temp1][b] +"="+ vstorage[array_lines[temp1][b]].toString()); // vstorage[array_lines[temp1][b]].toString());
+				}
+				statement = statement + array_lines[temp1][b];
+			}
+
+			if(!eval(statement)){
+				exclude_start.push(start_index[a]);
+				exclude_end.push(end_index[a]);
+			}
+		}
+
+		for(var a=0; a<array_lines.length; a++){
+			if(a==start_index[0]){
+				if(a==exclude_start[0]){
+					a = exclude_end[0];
+					exclude_end.slice(0,1);
+					exclude_start.slice(0,1);
+				}else{
+					a++;
+					start_index.slice(0,1);
+					end_index.slice(0,1);
+				}
+			}
+			return_lines.push(array_lines[a]);
+		}
+
+		return return_lines;
+	}
+
+	function forStatement(){
+		
+	}
+	function whileStatement(){
+		
+	}
+
+
+
+	function classOrganizer(entireArray){
+		var index;
+		var classObject = new classStorage();
+		var storage2 = []; //for method content
+		//initialize the variables
+
+		for(i=0;i<entireArray.length;i++){
+			var temp = entireArray[i];
+			
+			if(temp[0]==="import"){
+				classObject.impStore.push(temp.splice(1,temp.length));
+			}
+			else if(temp[0] ==="public" && temp[1] ==="class"){
+				classObject.name =temp[2]; //save name first then arrays
+				classObject.visibility = "public";
+
+				index=endbracket(entireArray,i+1);
+				for(i=i+1;i<entireArray.length;i++){
+					var temp1 = entireArray[i];
+					if((temp1.indexOf("(")!=-1 && temp1.indexOf(")")!=-1) && temp1.indexOf("{")!=-1){ //method case
+						classObject.mstorage.push(methodmaker(entireArray,i));
+						i=endbracket(entireArray,i+1);
+					} 
+					else if((s=temp1[0].primitive())!==""){
+						var vinstance = new variable();
+
+						vinstance.type=s;
+						if(temp1[2]==="="){
+							vinstance.value =temp1[3];
+						}
+						vinstance.is_static = temp1.indexOf("static")!=-1;
+						vinstance.visibility_type=temp1.visibility();
+
+						classObject.vstorage[temp1[1]]=vinstance; 
+
+					}
+					else if(temp1[0] in classObject.vstorage){
+						if(!isNaN(temp1[2]))
+						classObject.vstorage[temp1[0]]=temp1[2];
+					}
+					//private class case
+					else if(temp1[0]==="private" && temp1[1] ==="class"){
+						var pClassObject = new classStorage();
+						pClassObject.name = temp1[2];
+						pClassObject.visibility = "private";
+						var index1=endbracket(entireArray,i+1);
+						for(i=i+1;i<entireArray.length;i++){
+
+							if((s=entireArray[i][0].primitive())!==""){
+								var vinstance = new variable();
+								vinstance.type=s;
+								if(entireArray[i][2]==="="){
+									vinstance.value =entireArray[i][3];
+								}
+								vinstance.is_static = entireArray[i].indexOf("static")!=-1;
+								vinstance.visibility_type=entireArray[i].visibility();
+								pClassObject.vstorage[entireArray[i][1]]=vinstance; 
+							}
+							else if(entireArray[i][0] in pClassObject.vstorage){
+								if(!NaN(entireArray[i][2]))
+								pClassObject.vstorage[entireArray[i][0]]=entireArray[i][2];
+
+							}
+							else if((temp1.indexOf("(")!=-1 && temp1.indexOf(")")!=-1) && temp1.indexOf("{")!=-1){
+								pclassObject.mstorage.push(pclassObject.methodmaker(entireArray,i));
+								i=endbracket(entireArray,i+1);
+							}
+							else if(index1==i){
+								classObject.pstorage.push(pClassObject);
+								break;
+							}
+						}
+					}
+					else if(i==index){
+						break;
+					}
+
+				}
+
+			} 
+		}
+		return classObject;
+
+	}
+
+	function methodmaker(entireArray,i){
+			var myMethod = new method();
+			var storage2 = [];
+
+			//measures index
+			index= endbracket(entireArray,i+1);
+			//store visibility
+			myMethod.visibility_type= entireArray[i].visibility();
+			//check static
+			myMethod.is_static=entireArray[i].indexOf("static")!=-1;
+			myMethod.return_type = entireArray[i][entireArray[i].indexOf("(")-2];
+			myMethod.method_name = entireArray[i][entireArray[i].indexOf("(")-1];
+			var tracker=1;
+			//store arguments
+			while(true){
+				myMethod.args.push(entireArray[i][entireArray[i].indexOf("(")+tracker]);
+				myMethod.args.push(entireArray[i][entireArray[i].indexOf("(")+tracker+1]);
+
+				if(entireArray[i][entireArray[i].indexOf("(")+tracker+2]!=","){
+					break;
+				}
+				tracker=tracker+3;
+			}
+			//go through the content && tells when it ends
+			for(i=i+1;i<entireArray.length;i++){
+				temp2 = entireArray[i];
+
+				if((s=temp2[0].primitive())!=""){
+					var vinstance = new variable();
+
+					vinstance.type=s;
+					//do if equalized
+					if(temp2[2]==="="){
+						vinstance.value =temp2[3];
+					}
+					vinstance.is_static = (temp2.indexOf("static")!=-1);
+					vinstance.visibility_type=temp2.visibility();
+					myMethod.vstorage[temp2[1]]=vinstance; 
+				}
+				if(temp2[0] in myMethod.vstorage){
+					if(!isNaN(temp2[2])){
+						myMethod.vstorage[temp2[0]].value=temp2[2];
+					}
+				}
+				if(i==index){
+					myMethod.content_lines=storage2;
+					return myMethod;
+				}
+				storage2.push(temp2);
+			}	
+			return null;
+	}
+	function endbracket(entireArray,i){
+		var index=1;
+
+		for(var x=i+1;x<entireArray.length;x++){
+			if(entireArray[x].indexOf("{")!=-1){
+				index++;
+			}
+			if(entireArray[x].indexOf("}")!=-1){
+				index--;
+				if(index==0){
+					return x;
+				}
+			}
+		}
+		return -1; // error detector
+	}
+	function parser(temp){
+		temp = temp.split(' ');
+		//go through inequality signs < = == >
+		for(var x=0;x<5;x++){
+			temp = inequalityStatement(temp);
+		}
+		// go through brackets 
+		for(var x=0;x<10;x++){
+			temp = brackets(temp);
+		}
+		// go through math expression
+		for(var x=0;x<5;x++){
+			temp = mathExpression(temp);
+		}
+		// go through middle brackets 
+		for(var x=0;x<2;x++){
+			temp = semicolonM(temp);
+		}
+		for( var x=0;x<5;x++){
+			temp = commaParser(temp);
+		}
+		for(var x=0;x<5;x++){
+			temp = AndOr(temp);
+		}
+		for(var x=0;x<5;x++){
+			temp = dotParser(temp);
+		}
+
+		// go through semicolon
+		temp = semicolon(temp);
+
+		//finally add it to the storage
+		temp=temp.filter(function(a){return a!=""})
+
+		return temp;
+
+	}
+
+
+
+
+	//sub helper
+	function brackets(lineArray){
+		var retArray=[];
+
+		for(var i=0;i<lineArray.length;i++){
+			if((n=lineArray[i].indexOf("("))!=-1){
+				if(n!=0){
+					retArray.push(lineArray[i].substring(0,n));
+				}
+				retArray.push(lineArray[i].substring(n,n+1));
+				if(n+1!=lineArray[i].length){
+					var str= lineArray[i].substring(n+1,lineArray[i].length);
+					if((n=str.indexOf(")"))!=-1){
+						if(n!=0){
+							retArray.push(str.substring(0,n));
+						}
+						retArray.push(str.substring(n,n+1));
+						if(n+1!=str.length){
+							retArray.push(str.substring(n+1,str.length));
+						}
+					} else{
+						retArray.push(str);
+					}
+				}
+			}
+			else if((n=lineArray[i].indexOf(")"))!=-1){
+				if(n!=0){
+					retArray.push(lineArray[i].substring(0,n));
+				}
+				retArray.push(lineArray[i].substring(n,n+1));
+				if(n+1!=lineArray[i].length){
+					retArray.push(lineArray[i].substring(n+1,lineArray[i].length));
+				}
+			} else{
+				retArray.push(lineArray[i]);
+			}
+		}
+
+		var retArray1=[];
+
+		for(var i=0;i<retArray.length;i++){
+			if((n=retArray[i].indexOf("{"))!=-1){
+				if(n!=0){
+					retArray1.push(retArray[i].substring(0,n));
+				}
+				retArray1.push(retArray[i].substring(n,n+1));
+				if(n+1!=retArray[i].length){
+					var str= retArray[i].substring(n+1,retArray[i].length);
+					if((n=str.indexOf("}"))!=-1){
+						if(n!=0){
+							retArray1.push(str.substring(0,n));
+						}
+						retArray1.push(str.substring(n,n+1));
+						if(n+1!=str.length){
+							retArray1.push(str.substring(n+1,str.length));
+						}
+					} else{
+						retArray1.push(str);
+					}
+				}
+			}
+			else if((n=retArray[i].indexOf("}"))!=-1){
+				if(n!=0){
+					retArray1.push(retArray[i].substring(0,n));
+				}
+				retArray1.push(retArray[i].substring(n,n+1));
+				if(n+1!=retArray.length){
+					retArray1.push(retArray[i].substring(n+1,retArray[i].length));
+				}
+			} else{
+				retArray1.push(retArray[i]);
+			}
+		}
+
+		return retArray1;
+	}
+
+
+	//covers the && and || case 
+	function AndOr(lineArray){
+
+		var retArray=[];
+		//&&
+		for(var i=0;i<lineArray.length;i++){
+			if((n=lineArray[i].indexOf("&"))!=-1){
+				if(n!=0){
+					retArray.push(lineArray[i].substring(0,n));
+				}
+				retArray.push(lineArray[i].substring(n,n+1));
+				if(n+1 !=lineArray[i].length){
+					if(lineArray[i].substring(n+1,n+2)==="&"){
+						retArray.pop();
+						retArray.push("&&");
+						if(n+2!=lineArray[i].length){
+							retArray.push(lineArray[i].substring(n+2,lineArray[i].length));
+						}
+					} else{
+						retArray.push(lineArray[i].substring(n+1,lineArray[i].length));
+					}
+				}
+			} else{
+				retArray.push(lineArray[i]);
+			}
+		}
+		
+		var retArray1=[];
+		// || 
+		for(var i=0;i<retArray.length;i++){
+			if((n=retArray[i].indexOf("|"))!=-1){
+				if(n!=0){
+					retArray1.push(retArray[i].substring(0,n));
+				}
+				retArray1.push(retArray[i].substring(n,n+1));
+				if(n+1 !=retArray[i].length){
+					if(retArray[i].substring(n+1,n+2)==="|"){
+						retArray1.pop();
+						retArray1.push("||");
+						if(n+2!=retArray[i].length){
+							retArray1.push(retArray[i].substring(n+2,retArray[i].length));
+						}
+					} else{
+						retArray1.push(retArray[i].substring(n+1,retArray[i].length));
+					}
+				}
+			} else{
+				retArray1.push(retArray[i]);
+			}
+		}
+		
+
+		return retArray1;
+
+	}
+
+
+
+
+
+
+	function commaParser(lineArray){
+		var retArray=[];
+		for(var i=0;i<lineArray.length;i++){
+			if((n=lineArray[i].indexOf(","))!=-1){
+				if(n!=0){
+					retArray.push(lineArray[i].substring(0,n));
+				}
+				retArray.push(lineArray[i].substring(n,n+1));
+				if((n+1) != lineArray[i].length){
+					retArray.push(lineArray[i].substring(n+1,lineArray[i].length));
+				}
+
+			} else{
+				retArray.push(lineArray[i]);
+			}
+		}
+
+		return retArray;
+
+	}
+	function dotParser(lineArray){
+		var retArray=[];
+		for(var i=0;i<lineArray.length;i++){
+			if((n=lineArray[i].indexOf("."))!=-1){
+				if(n!=0){
+					retArray.push(lineArray[i].substring(0,n));
+				}
+				retArray.push(lineArray[i].substring(n,n+1));
+				if((n+1) != lineArray[i].length){
+					retArray.push(lineArray[i].substring(n+1,lineArray[i].length));
+				}
+
+			} else{
+				retArray.push(lineArray[i]);
+			}
+		}
+
+		return retArray;
+
+	}
+	function mathExpression(lineArray){
+		//case for + / ++
+
+		var retArray=[];
+		for(var i=0;i<lineArray.length;i++){
+			if((n=lineArray[i].indexOf("+"))!=-1){
+				if(n!=0){
+					retArray.push(lineArray[i].substring(0,n));
+				}
+				retArray.push(lineArray[i].substring(n,n+1));
+				if(n+1 !=lineArray[i].length){
+					if(lineArray[i].substring(n+1,n+2)==="+"){
+						retArray.pop();
+						retArray.push("++");
+						if(n+2!=lineArray[i].length){
+							retArray.push(lineArray[i].substring(n+2,lineArray[i].length));
+						}
+					} else{
+						retArray.push(lineArray[i].substring(n+1,lineArray[i].length));
+					}
+				}
+			} else{
+				retArray.push(lineArray[i]);
+			}
+		}
+
+		//case for - / --
+
+		var retArray1=[];
+		for(var i=0;i<retArray.length;i++){
+			if((n=retArray[i].indexOf("-"))!=-1){
+				if(n!=0){
+					retArray1.push(retArray[i].substring(0,n));
+				}
+				retArray1.push(retArray[i].substring(n,n+1));
+				if(n+1 !=retArray[i].length){
+					if(retArray[i].substring(n+1,n+2)==="-"){
+						retArray1.pop();
+						retArray1.push("--");
+						if(n+2!=retArray[i].length){
+							retArray1.push(retArray[i].substring(n+2,retArray[i].length));
+						}
+					} else{
+						retArray1.push(retArray[i].substring(n+1,retArray[i].length));
+					}
+				}
+			} else{
+				retArray1.push(retArray[i]);
+			}
+		}
+
+		//case for *
+
+		var retArray2=[];
+		for(var i=0;i<retArray1.length;i++){
+			if((n=retArray1[i].indexOf("*"))!=-1){
+				if(n!=0){
+					retArray2.push(retArray1[i].substring(0,n));
+				}
+				retArray2.push(retArray1[i].substring(n,n+1));
+				if((n+1) != retArray1[i].length){
+					retArray2.push(retArray1[i].substring(n+1,retArray1[i].length));
+				}
+
+			} else{
+				retArray2.push(retArray1[i]);
+			}
+		}
+
+		//case for /
+
+		var retArray3=[];
+		for(var i=0;i<retArray2.length;i++){
+			if((n=retArray2[i].indexOf("/"))!=-1){
+				if(n!=0){
+					retArray3.push(retArray2[i].substring(0,n));
+				}
+				retArray3.push(retArray2[i].substring(n,n+1));
+				if((n+1) != retArray2[i].length){
+					retArray3.push(retArray2[i].substring(n+1,retArray2[i].length));
+				}
+			} else{
+				retArray3.push(retArray2[i]);
+			}
+		}
+
+		// case for %
+
+		var retArray4=[];
+		for(var i=0;i<retArray3.length;i++){
+			if((n=retArray3[i].indexOf("%"))!=-1){
+				if(n!=0){
+					retArray4.push(retArray3[i].substring(0,n));
+				}
+				retArray4.push(retArray3[i].substring(n,n+1));
+				if((n+1) != retArray3[i].length){
+					retArray4.push(retArray3[i].substring(n+1,retArray3[i].length));
+				}
+			} else{
+				retArray4.push(retArray3[i]);
+			}
+		}
+
+		return retArray4;
+
+
+	}
+
+	function semicolonM(lineArray){
+		var retArray=[];
+		//for(int i=0;i<x;i++)
+		for(var i=0;i<lineArray.length;i++){
+			if(i==lineArray.length-1){
+				retArray.push(lineArray[i]);
+			}
+			else if((n=lineArray[i].indexOf(";"))!=-1){
+				if(n!=0){
+					retArray.push(lineArray[i].substring(0,n));
+				}
+				retArray.push(lineArray[i].substring(n,n+1));
+				if(n+1!=lineArray[i].length){
+					retArray.push(lineArray[i].substring(n+1,lineArray[i].length));
+				}
+			} else{
+				retArray.push(lineArray[i]);
+			}
+		}
+		return retArray;
+	}
+
+
+
+	function semicolon(lineArray){
+		if((n=lineArray[lineArray.length-1].indexOf(";"))!=-1){
+			if(n==0){
+				lineArray.pop();
+			} else{
+				lineArray[lineArray.length-1]=lineArray[lineArray.length-1].replace(";","");
+			}
+		}
+		return lineArray;
+		
+	}
+	function inequalityStatement(lineArray){
+		// = and == sign case
+		var retArray=[];
+
+		for(var i=0;i<lineArray.length;i++){
+			if((n=lineArray[i].indexOf("="))!=-1){
+				if(n!=0){
+					retArray.push(lineArray[i].substring(0,n));
+				}
+				retArray.push(lineArray[i].substring(n,n+1));
+				if(n+1 !=lineArray[i].length){
+
+					if(lineArray[i].substring(n+1,n+2)==="="){
+						retArray.pop();
+						retArray.push("==");
+						if(n+2!=lineArray[i].length){
+							retArray.push(lineArray[i].substring(n+2,lineArray[i].length));
+						}
+					} else{
+						retArray.push(lineArray[i].substring(n+1,lineArray[i].length));
+					}
+
+				}
+			} else{
+				retArray.push(lineArray[i]);
+			}
+
+		}
+		var retArray1=[];
+
+		// < sign case
+		for(var i=0;i<retArray.length;i++){
+			if((n=retArray[i].indexOf("<"))!=-1){
+				if(n!=0){
+					retArray1.push(retArray[i].substring(0,n));
+				}
+				retArray1.push(retArray[i].substring(n,n+1));
+				if((n+1) != retArray[i].length){
+					retArray1.push(retArray[i].substring(n+1,retArray[i].length));
+				}
+
+			} else{
+				retArray1.push(retArray[i]);
+			}
+		}
+		// > sign case 
+
+		var retArray2=[];
+
+		for(var i=0;i<retArray1.length;i++){
+			if((n=retArray1[i].indexOf(">"))!=-1){
+				if(n!=0){
+					retArray2.push(retArray1[i].substring(0,n));
+				}
+				retArray2.push(retArray1[i].substring(n,n+1));
+				if((n+1) != retArray1[i].length){
+					retArray2.push(retArray1[i].substring(n+1,retArray1[i].length));
+				}
+
+			} else{
+				retArray2.push(retArray1[i]);
+			}
+		}
+
+		var retArray3=[];
+
+		for(var i=0;i<retArray2.length;i++){
+			if((n=retArray2[i].indexOf("!"))!=-1){
+				if(n!=0){
+					retArray3.push(retArray2[i].substring(0,n));
+				}
+				retArray3.push(retArray2[i].substring(n,n+1));
+				if((n+1) != retArray2[i].length){
+					retArray3.push(retArray2[i].substring(n+1,retArray2[i].length));
+				}
+
+			} else{
+				retArray3.push(retArray2[i]);
+			}
+		}
+
+
+
+		return retArray3;
+	}
+
+	function isValid(str){
+	 return !/[~`!#$%\^&*+=\-\[\]\\';,/{}|\\":<>\?]/g.test(str);
+	}
+
+</script>
+</body>
+</html>

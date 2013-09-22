@@ -242,7 +242,7 @@ function labels(label){
 		var classes = (code.match(/class/g) || []).length;
 		var lines = $('textarea').val().trim().split('\n');
 		lines = lines || [""];
-		lines = lines.length - 1;
+		lines = lines.length;
 
 		var shtml = "Your code looks good. "+"<h1>"+lines+"</h1> wonderful lines";
 		shtml += (fors > 0)? ("<br><h2>"+fors+"</h2> great for loops") : "";
