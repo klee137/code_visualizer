@@ -1,7 +1,7 @@
 <html>
 <head>
     <script src="js/jquery-latest.js"></script>
-    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="js/d3.v3.min.js"></script>
     <script src="js/underscore-min.js"></script>
     <script src="js/jquery-latest.js"></script>
 	<script type="text/javascript" src="http://api.filepicker.io/v1/filepicker.js"></script>
@@ -9,6 +9,9 @@
 	<link href="http://www.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet">
 	<link href="css/style2.css" rel="stylesheet">
 	<script src="js/visualize.js"></script>
+	<script src="js/three.min.js"></script>
+	<script src="js/helvetiker.js"></script>
+	<script src="js/navigation.js"></script>
     <style type="text/css">
         .link { stroke: #000000; }
         .nodetext { pointer-events: none; font: 10px sans-serif; }
@@ -66,15 +69,27 @@
 	<i class="glyphicon glyphicon-chevron-right shelfRight"></i>
 </section>
 <textarea class='code'>
-int x = 5;
-x = 4;
-int y = 0;
-y = x;
-int[] iarray = new int[10];
-iarray[3] = 3;
+import java.util.*;
+public class SortingAlgorithm{
+	public static void main(String[] args){
+		int x = 4;
+		int y = 10;
+		int z = 5;
+		z = 3;
+
+		int[] iarray = new int[5];
+		iarray[0] = 7;
+		iarray[1] = 2;
+		iarray[2] = 9;
+		iarray[3] = 5;
+		iarray[4] = 1;
+		
+	}
+}
 </textarea>
 
 <div id="view"></div>
+<div id="container"></div>
 
 <div id="magicBtn">M</div>
 <div id="console" class='lead'>
@@ -85,6 +100,8 @@ iarray[3] = 3;
 	<div id="nextLine" class='btn btn-success'>Next Line</div>
 	<div id="resetBtn" onClick='reset()' class='btn btn-warning'>Reset</div>
 </div>
+
+<h1 id="title" style="width:100%; text-align:center; top:30%; position:absolute">CODE VISUALIZER</h1>
 
 
 <div class="modal fade" id="detail">
@@ -120,6 +137,131 @@ iarray[3] = 3;
 <script src="js/user-interface.js"></script>
 <script src="system_print.js"></script>
 <script type="text/javascript">
+
+	var camera, scene, renderer;
+	var geometry, material, mesh, sphere;
+
+	camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 15000 );
+	camera.position.z = 1000;
+
+	scene = new THREE.Scene();
+
+//Modelling
+	//plane size
+	var size = 2000;
+	//box size
+	var bsize = 20;
+	
+	geometry = new THREE.CubeGeometry( bsize, bsize, bsize );
+	material = new THREE.MeshLambertMaterial( { color: 0xE01BE0 } );
+	
+	var boxes = new Array();
+	function addBox(color){
+		color = color || "rgb("+Math.floor(Math.random()*255)+","+Math.floor(Math.random()*255)+","+Math.floor(Math.random()*255)+")";
+		var mesh = new THREE.Mesh( geometry, material.clone() );
+		mesh.position.x = Math.random()*size-(size/2);
+		mesh.position.z = Math.random()*size-(size/2);
+		scene.add( mesh );
+		
+		boxes.push(mesh);
+
+		mesh.material.color = color;
+	}
+
+	$('#nextLine').click(function(){
+		addBox();
+		playNote();
+	});
+	
+//Lighting
+	var pointLight = new THREE.PointLight(0xE01BE0);
+	pointLight.position.x = 10;
+	pointLight.position.y = 350;
+	pointLight.position.z = 130;
+	
+	scene.add(pointLight);
+	
+	
+	renderer = new THREE.WebGLRenderer();
+	renderer.setSize( window.innerWidth, window.innerHeight );
+	renderer.shadowMapEnabled = true;
+	document.body.appendChild( renderer.domElement );
+
+	for (b in boxes){
+		boxes[b].rotation.y = Math.random();
+		boxes[b].position.y = -2000*Math.random();
+		boxes[b].geometry.verticesNeedUpdate = true
+		boxes[b].geometry.elementsNeedUpdate = true
+		boxes[b].geometry.dynamic = true;
+		boxes[b].matrixWorldNeedsUpdate = true;
+		boxes[b].matrixAutoUpdate = true;
+		boxes[b].geometry.normalsNeedUpdate = true;
+		boxes[b].geometry.morphTargetsNeedUpdate=true;
+		boxes[b].geometry.uvsNeedUpdate=true;
+		boxes[b].geometry.colorsNeedUpdate=true;
+		boxes[b].geometry.tangentsNeedUpdate=true;
+	}
+	camera.rotation.x = -0.5;
+	camera.position.y = 500;
+
+
+//Intro
+	var all = $('.left, .shelf, #rightMenu').hide();
+	$('#title').hide();
+	var boxN = 0;
+	function grow(){
+		if (boxN < 150){
+			setTimeout(function(){
+				boxN++;
+				addBox();
+				grow();
+			}, 15);
+		} else {
+			$('#title').fadeIn(2000, function(){
+				all.fadeIn(function(){
+					$('#title').fadeOut(1000, function(){
+						$('canvas').fadeOut(1000);
+					});
+				});
+			});		
+		}
+	};
+	grow();
+	
+
+
+	//end intro
+
+	animate();
+	function animate() {
+		requestAnimationFrame( animate );
+
+		//rotate the box and sphere
+		for (b in boxes){
+			if (boxes.hasOwnProperty(b)){
+				boxes[b].position.y += 10;
+				//boxes[b].geometry.height += 2;
+				boxes[b].material.opacity -= 0.002;
+				boxes[b].rotation.y += 0.02;
+				
+				if (boxes[b].position.y > 700){
+					boxes[b].position.y = -1500;
+					boxes[b].material.opacity = 1;
+				}
+			}
+		}
+		
+		//makes the camera move based on the arrow keys
+		//putting changes in the animate() makes it more responsive
+		camera.position.z -= zc*15;
+		camera.position.x -= xc*15;
+		camera.position.y += yc*15;
+		camera.rotation.y += yr;
+		
+		renderer.render( scene, camera );
+
+	}
+
 
 
 	Array.prototype.visibility = function( ){
@@ -226,31 +368,34 @@ iarray[3] = 3;
 
 
 	var lines =$('textarea').val().trim().split('\n');
-	var ostorage, storage, testClass, testArray;
+	var storage = [];
+
+	for(var i=0;i<lines.length;i++){
+		var temp = lines[i].trim();
+		if(temp.length<1){
+			continue;
+		}
+		storage.push(parser(temp));
+	}
+
+
+	var testClass = classOrganizer(storage);
+
+
 	function go(i){
-		 lines=$('textarea').val().trim().split('\n');
+		 lines=testClass.mstorage[0].content_lines;
+
 
 		//SUPER VARIABLES
-		ostorage ={
-			'objValue' : {}
-		}
-		
 		storage=[];
 
 		// BEGINNING OF THE PROGRAM
 		//analyze the ith line in textarea, increment on clicking next line btn
-		var temp = lines[i].trim();
+		var temp = lines[i];
 
-		print(temp);
+		print(temp.join(" "));
 		if(temp.length >= 1){
-			var x = parser(temp)
-			storage.push(parser(temp));
-
-			visualize(x);
-
-			testClass = classOrganizer(storage);
-
-			
+			visualize(temp);
 		} 
 
 	}
