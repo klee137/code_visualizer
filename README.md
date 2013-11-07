@@ -8,4 +8,4 @@ Team
 - Kiwook Lee (UIUC '16) | https://github.com/klee137
 - Jae Choi (UIUC '16) | https://github.com/asd2734
 
-Code Visualizer is a web application that takes in Java source code and organizes it into a visual graph on a line-by-line basis.
+Code Visualizer is a web application that takes in Java source code and organizes its consisting objects, methods, and references into a visual graph on a line-by-line basis.
